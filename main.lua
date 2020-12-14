@@ -11,5 +11,8 @@ display.setStatusBar(display.HiddenStatusBar)
 -- Include the Corona "composer" module
 local composer = require "composer"
 
+-- Seed the random number generator
+math.randomseed( os.time() )
+
 -- Load menu screen
 composer.gotoScene("scenes.menu.menu")
