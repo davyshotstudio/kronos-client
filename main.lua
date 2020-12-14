@@ -12,7 +12,7 @@ display.setStatusBar(display.HiddenStatusBar)
 local composer = require "composer"
 
 -- Seed the random number generator
-math.randomseed( os.time() )
+math.randomseed(os.time())
 
 -- Load menu screen
 composer.gotoScene("scenes.menu.menu")
