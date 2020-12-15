@@ -12,4 +12,4 @@ display.setStatusBar(display.HiddenStatusBar)
 local composer = require "composer"
 
 -- Load menu screen
-composer.gotoScene("scenes.menu.menu")
+composer.gotoScene("scenes.game.game")
