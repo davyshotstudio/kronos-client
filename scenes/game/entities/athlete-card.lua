@@ -5,7 +5,7 @@
 
 local AthleteCard = {}
 
--- Instantiate athlete card (constructor)
+-- Instantiate Athlete Card (constructor)
 function AthleteCard:new(options)
   local id = options.id
   local name = options.name or ""
@@ -17,7 +17,7 @@ function AthleteCard:new(options)
     id = id,
     name = name,
     pictureURL = pictureURL,
-    position = position,
+    positions = positions,
     skill = skill
   }
 

@@ -12,12 +12,12 @@ local AtBatManager = {}
 function AtBatManager:new(options)
   local balls = options.balls or 0
   local strikes = options.strikes or 0
-  local currentResult = constants.NONE
+  local state = constants.NONE
 
   local atBatManager = {
     balls = balls,
     strikes = strikes,
-    result = currentResult
+    state = state
   }
 
   setmetatable(atBatManager, self)
@@ -26,6 +26,8 @@ function AtBatManager:new(options)
   return atBatManager
 end
 
+-- Roll a random result between the player's floor and ceiling
+-- TODO: add additional logic for determining the roll
 local function roll(player)
   return math.random(player:getSkill():getFloor(), player:getSkill():getCeiling())
 end
@@ -64,6 +66,10 @@ function AtBatManager:updateState(pitcherRoll, batterRoll)
   -- Update state machine and return state
   self.state = state
   return state
+end
+
+function AtBatManager:getState()
+  return self.state
 end
 
 return AtBatManager
