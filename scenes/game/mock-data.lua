@@ -30,7 +30,7 @@ local battingLineup = {
       name = "Poseidon",
       pictureURL = "poseidon.jpg",
       positions = {"p", "2b"},
-      skill = skill:new({floor = 30, ceiling = 70})
+      skill = skill:new({floor = 0, ceiling = 110})
     }
   ),
   athleteCard:new(
@@ -39,7 +39,7 @@ local battingLineup = {
       name = "Hades",
       pictureURL = "hades.jpg",
       positions = {"p", "2b"},
-      skill = skill:new({floor = 30, ceiling = 70})
+      skill = skill:new({floor = 50, ceiling = 60})
     }
   )
 }

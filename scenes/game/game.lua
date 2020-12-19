@@ -173,8 +173,10 @@ function clearMatchup()
       "TEXT_SCORE",
       "CARD_PITCHER",
       "TEXT_PITCHER_NAME",
+      "TEXT_PITCHER_SKILL_RANGE",
       "CARD_BATTER",
-      "TEXT_BATTER_NAME"
+      "TEXT_BATTER_NAME",
+      "TEXT_BATTER_SKILL_RANGE"
     }
   )
 end
@@ -247,6 +249,25 @@ function updateSceneUI(batterRoll, pitcherRoll)
     end)()
   )
 
+  -- Add pitcher skill
+  viewManager:addComponent(
+    "TEXT_PITCHER_SKILL_RANGE",
+    (function()
+      local pitcherSkill =
+        display.newText(
+        "floor: " .. pitcher:getSkill():getFloor() .. ", ceiling: " .. pitcher:getSkill():getCeiling(),
+        100,
+        200,
+        native.systemFont,
+        16
+      )
+      pitcherSkill.x = 30
+      pitcherSkill.y = display.contentCenterY + 60
+      pitcherSkill:setFillColor(1, 0, 0.5)
+      return pitcherSkill
+    end)()
+  )
+
   -- Add batter card
   viewManager:addComponent(
     "CARD_BATTER",
@@ -267,6 +288,25 @@ function updateSceneUI(batterRoll, pitcherRoll)
       batterName.y = display.contentCenterY - 60
       batterName:setFillColor(1, 0, 0.5)
       return batterName
+    end)()
+  )
+
+  -- Add batter skill
+  viewManager:addComponent(
+    "TEXT_BATTER_SKILL_RANGE",
+    (function()
+      local batterSkill =
+        display.newText(
+        "floor: " .. batter:getSkill():getFloor() .. ", ceiling: " .. batter:getSkill():getCeiling(),
+        100,
+        200,
+        native.systemFont,
+        16
+      )
+      batterSkill.x = display.contentWidth - 30
+      batterSkill.y = display.contentCenterY + 60
+      batterSkill:setFillColor(1, 0, 0.5)
+      return batterSkill
     end)()
   )
 end
