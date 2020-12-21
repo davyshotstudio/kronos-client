@@ -46,8 +46,8 @@ end
 function AtBatManager:updateState(pitcherRoll, batterRoll)
   local result = batterRoll - pitcherRoll
 
-  -- Positive value means pitcher wins,
-  -- negative value means batter wins,
+  -- Positive value means batter wins,
+  -- negative value means pitcher wins,
   -- tie means foul ball
   if (result == 0) then
     state = constants.FOUL
