@@ -15,4 +15,4 @@ local composer = require "composer"
 math.randomseed(os.time())
 
 -- Load menu screen
-composer.gotoScene("scenes.menu.menu")
+composer.gotoScene("scenes.game.game")
