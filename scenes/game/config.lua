@@ -9,7 +9,9 @@ local config = {
   -- Max number of outs in an inning
   MAX_OUTS = 3,
   -- Max number of innings in a game
-  MAX_INNINGS = 3
+  MAX_INNINGS = 3,
+  MAX_BALLS = 4,
+  MAX_STRIKES = 3
 }
 
 return config

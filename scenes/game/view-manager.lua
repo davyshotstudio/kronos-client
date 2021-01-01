@@ -45,11 +45,10 @@ end
 function ViewManager:removeComponents(componentNames)
   for _, componentName in ipairs(componentNames) do
     local component = self:getComponent(componentName)
-    if (component == nil) then
-      error("cannot get component: " .. componentName)
+    if (component ~= nil) then
+      display.remove(component)
+      self.components[componentName] = nil
     end
-    display.remove(component)
-    self.components[componentName] = nil
   end
 end
 

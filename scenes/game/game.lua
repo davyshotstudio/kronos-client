@@ -6,10 +6,11 @@
 -----------------------------------------------------------------------------------------
 
 local composer = require("composer")
-local widget = require "widget"
+local widget = require("widget")
 
 -- DI modules
-local atBatManagerModule = require("scenes.game.at-bat-manager")
+local resolverManagerModule = require("scenes.game.resolver-manager")
+local batterManagerModule = require("scenes.game.batter-manager")
 local inningManagerModule = require("scenes.game.inning-manager")
 local viewManagerModule = require("scenes.game.view-manager")
 
@@ -37,14 +38,16 @@ local clearMatchup
 
 local sceneGroup
 local viewManager
-local atBatManager
+local resolverManager
+local batterManager
 local inningManager
 
 -- create() is executed on first load and runs only once (initialize values here)
 function scene:create(event)
   sceneGroup = self.view
   viewManager = viewManagerModule:new()
-  atBatManager = atBatManagerModule:new({balls = 0, strikes = 0})
+  resolverManager = resolverManagerModule:new({balls = 0, strikes = 0})
+  batterManager = batterManagerModule:new({resolverManager = resolverManager})
   inningManager =
     inningManagerModule:new(
     {
@@ -59,6 +62,10 @@ function scene:create(event)
     }
   )
 
+  composer.setVariable("viewManager", viewManager)
+  composer.setVariable("batterManager", batterManager)
+  composer.setVariable("inningManager", inningManager)
+
   initializeSceneView()
 end
 
@@ -67,39 +74,7 @@ end
 -- -----------------------------------------------------------------------------------
 
 function onThrowPitch()
-  -- Reset matchup UI
-  clearMatchup()
-
-  -- Throw the pitch and retrieve result of pitch
-  local resultState, pitcherRoll, batterRoll =
-    atBatManager:throwPitch(inningManager:getCurrentPitcher(), inningManager:getCurrentBatter())
-
-  -- Update the inning game state with the result of the pitch
-  local action, params = getActionAndParamFromResolveState(resultState)
-  local inningState = inningManager:updateGameState(action, params)
-
-  -- Testing logs
-  print("Result log:")
-  print("Pitcher roll: " .. pitcherRoll)
-  print("Batter roll: " .. batterRoll)
-  print("Inning state: " .. inningManager:getState())
-  print("Result state: " .. resultState)
-  print("Runs: " .. inningManager:getRuns())
-  print("Outs: " .. inningManager:getOuts())
-  print("Inning: " .. inningManager:getInning())
-  print("---------")
-
-  -- Update UI based on the new state
-  if (inningState == constants.STATE_INNING_END) then
-    -- TODO: for now, just remove button to symbolize inning over
-    viewManager:removeComponents({"BUTTON_THROW_PITCH"})
-  elseif (inningState == constants.STATE_AT_BAT_END) then
-    -- TODO: logic if the at bat has ended
-  elseif (inningState == constants.STATE_AT_BAT_ONGOING) then
-  -- TODO: logic if the at bat is still going on
-  end
-
-  updateSceneUI(batterRoll, pitcherRoll)
+  composer.gotoScene("scenes.game.batter-swing-selection-scene")
 end
 
 -- -----------------------------------------------------------------------------------
@@ -192,7 +167,7 @@ function updateSceneUI(batterRoll, pitcherRoll)
       local resultText =
         display.newText(
         sceneGroup,
-        "Result: " .. atBatManager:getState() .. " (" .. batterRoll - pitcherRoll .. ")",
+        "Result: " .. batterManager:getState() .. " (" .. batterRoll - pitcherRoll .. ")",
         400,
         80,
         native.systemFont,
@@ -255,6 +230,7 @@ function updateSceneUI(batterRoll, pitcherRoll)
     (function()
       local pitcherSkill =
         display.newText(
+        sceneGroup,
         "floor: " .. pitcher:getSkill():getFloor() .. ", ceiling: " .. pitcher:getSkill():getCeiling(),
         100,
         200,
@@ -283,7 +259,8 @@ function updateSceneUI(batterRoll, pitcherRoll)
   viewManager:addComponent(
     "TEXT_BATTER_NAME",
     (function()
-      local batterName = display.newText(batter:getName() .. " roll: " .. batterRoll, 100, 200, native.systemFont, 16)
+      local batterName =
+        display.newText(sceneGroup, batter:getName() .. " roll: " .. batterRoll, 100, 200, native.systemFont, 16)
       batterName.x = display.contentWidth - 30
       batterName.y = display.contentCenterY - 60
       batterName:setFillColor(1, 0, 0.5)
@@ -297,6 +274,7 @@ function updateSceneUI(batterRoll, pitcherRoll)
     (function()
       local batterSkill =
         display.newText(
+        sceneGroup,
         "floor: " .. batter:getSkill():getFloor() .. ", ceiling: " .. batter:getSkill():getCeiling(),
         100,
         200,
@@ -309,6 +287,33 @@ function updateSceneUI(batterRoll, pitcherRoll)
       return batterSkill
     end)()
   )
+end
+
+function scene:hide(event)
+  local sceneGroup = self.view
+  local phase = event.phase
+
+  if phase == "did" then
+    -- Widgets must be manually removed
+    viewManager:removeComponents(
+      {
+        "BUTTON_THROW_PITCH"
+      }
+    )
+  -- Called when the scene is now off screen
+  end
+end
+
+function scene:destroy(event)
+  local sceneGroup = self.view
+  if viewManager.get("BUTTON_THROW_PITCH") then
+    -- Widgets must be manually removed
+    viewManager:removeComponents(
+      {
+        "BUTTON_THROW_PITCH"
+      }
+    )
+  end
 end
 
 ---------------------------------------------------------------------------------
