@@ -4,8 +4,8 @@
 -- for a given matchup
 --------------------------------------------------------------------
 
-local constants = require("scenes.game.constants")
-local config = require("scenes.game.config")
+local constants = require("scenes.game.utilities.constants")
+local config = require("scenes.game.utilities.config")
 local InningManager = {}
 
 -- Instantiate InningManager (constructor)

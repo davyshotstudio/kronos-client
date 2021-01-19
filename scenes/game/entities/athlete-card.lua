@@ -31,7 +31,7 @@ end
 -- Getters for AthleteCard properties
 -------------------------------------
 
-function AthleteCard:getId()
+function AthleteCard:getID()
   return self.id
 end
 
