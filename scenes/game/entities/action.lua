@@ -12,6 +12,8 @@ function Action:new(options)
   local description = options.description or ""
   local pictureURL = options.pictureURL or ""
   local skill = options.skill
+  -- type can be a PITCHER or BATTER action type
+  local type = options.type
 
   local action = {
     id = id,
@@ -49,6 +51,10 @@ end
 
 function Action:getSkill()
   return self.skill
+end
+
+function Action:getType()
+  return self.type
 end
 
 return Action

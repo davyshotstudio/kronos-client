@@ -30,7 +30,7 @@ end
 -- Getters for ActionCard properties
 -------------------------------------
 
-function ActionCard:getId()
+function ActionCard:getID()
   return self.id
 end
 

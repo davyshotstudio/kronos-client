@@ -1,13 +1,13 @@
 --------------------------------------------------------------------
---
+-- ResolverManager manages logic in an at-bat between a pitcher and a batter
 --------------------------------------------------------------------
 
-local constants = require("scenes.game.constants")
-local config = require("scenes.game.config")
-local ResolverManager = {}
-
+local constants = require("scenes.game.utilities.constants")
+local config = require("scenes.game.utilities.config")
 -- TODO: Remove when no more mocks are needed
-local mockData = require("scenes.game.mock-data")
+local mockData = require("scenes.game.utilities.fixtures.mock-data")
+
+local ResolverManager = {}
 
 -- Instantiate ResolverManager (constructor)
 function ResolverManager:new(options)
@@ -54,7 +54,6 @@ function ResolverManager:updateState(action, params)
     if (self.batterSelectedZone > -1 and self.pitcherSelectedZone > -1) then
       -- Resolve the pitch
       local pitchResultState, pitcherRoll, batterRoll = self:resolvePitch(self.pitcher, self.batter)
-      print("resp;ve: " .. pitchResultState)
       self.pitchResultState = pitchResultState
       self.state = constants.STATE_PLAYERS_PITCH_RESOLVED
       -- If the pitch is a terminal pitch (results in a hit or out or walk), move state to at bat finished
@@ -156,12 +155,32 @@ function ResolverManager:getState()
   return self.state
 end
 
+function ResolverManager:getBatter()
+  return self.batter
+end
+
+function ResolverManager:setBatter(batter)
+  self.batter = batter
+end
+
+function ResolverManager:getPitcher()
+  return self.pitcher
+end
+
+function ResolverManager:setPitcher(pitcher)
+  self.pitcher = pitcher
+end
+
 function ResolverManager:getLastRolls()
   return self.lastPitcherRoll, self.lastBatterRoll
 end
 
 function ResolverManager:getPitchResultState()
   return self.pitchResultState
+end
+
+function ResolverManager:getCount()
+  return self.balls, self.strikes
 end
 
 return ResolverManager
