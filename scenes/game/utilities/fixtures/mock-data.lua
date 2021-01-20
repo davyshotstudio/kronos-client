@@ -1,7 +1,8 @@
 -- Entities
-local athleteCard = require("scenes.game.entities.athlete-card")
 local actionCard = require("scenes.game.entities.action-card")
 local action = require("scenes.game.entities.action")
+local athleteCard = require("scenes.game.entities.athlete-card")
+local pitch = require("scenes.game.entities.pitch")
 local skill = require("scenes.game.entities.skill")
 
 local pitchingStaff = {
@@ -11,7 +12,12 @@ local pitchingStaff = {
       name = "Montana",
       pictureURL = "character_card_montana.png",
       positions = {"p", "ss"},
-      skill = skill:new({floor = 0, ceiling = 100})
+      skill = skill:new({floor = 0, ceiling = 100}),
+      pitches = {
+        pitch:new({ id = 1, name = "FASTBALL", abbreviation = "FB"}),
+        pitch:new({ id = 2, name = "CHANGEUP", abbreviation = "CH"}),
+        pitch:new({ id = 3, name = "CURVEBALL", abbreviation = "CB"}),
+      }
     }
   )
 }

@@ -12,13 +12,15 @@ function AthleteCard:new(options)
   local pictureURL = options.pictureURL or ""
   local positions = options.positions
   local skill = options.skill
+  local pitches = options.pitches
 
   local athleteCard = {
     id = id,
     name = name,
     pictureURL = pictureURL,
     positions = positions,
-    skill = skill
+    skill = skill,
+    pitches = pitches,
   }
 
   setmetatable(athleteCard, self)
@@ -49,6 +51,10 @@ end
 
 function AthleteCard:getSkill()
   return self.skill
+end
+
+function AthleteCard:getPitches()
+  return self.pitches
 end
 
 return AthleteCard

@@ -18,7 +18,8 @@ function ResolverManager:new(options)
   local pitcher = options.pitcher or mockData.pitchingStaff[1]
   local batter = options.batter or mockData.battingLineup[1]
   local pitcherSelectedZone = options.pitcherSelectedZone or 0
-  local batterSelectedZone = options.batterSelectedZone or 0
+  local batterGuessedZone = options.batterGuessedZone or 0
+  local batterGuessedPitch = options.batterGuessedPitch or 0
   local lastPitcherRoll = -1
   local lastBatterRoll = -1
 
@@ -30,7 +31,8 @@ function ResolverManager:new(options)
     pitcher = pitcher,
     batter = batter,
     pitcherSelectedZone = pitcherSelectedZone,
-    batterSelectedZone = batterSelectedZone,
+    batterGuessedZone = batterGuessedZone,
+    batterGuessedPitch = batterGuessedPitch,
     lastPitcherRoll = lastPitcherRoll,
     lastBatterRoll = lastBatterRoll
   }
@@ -44,14 +46,14 @@ end
 function ResolverManager:updateState(action, params)
   if (self.state == constants.STATE_PLAYERS_PITCH_PENDING) then
     if (action == constants.ACTION_RESOLVER_BATTER_SELECT_ZONE) then
-      self.batterSelectedZone = params.batterSelectedZone
+      self.batterGuessedZone = params.batterGuessedZone
     end
 
     if (action == constants.ACTION_RESOLVER_PITCHER_SELECT_ZONE) then
       self.pitcherSelectedZone = params.pitcherSelectedZone
     end
 
-    if (self.batterSelectedZone > -1 and self.pitcherSelectedZone > -1) then
+    if (self.batterGuessedZone > -1 and self.pitcherSelectedZone > -1) then
       -- Resolve the pitch
       local pitchResultState, pitcherRoll, batterRoll = self:resolvePitch(self.pitcher, self.batter)
       self.pitchResultState = pitchResultState
@@ -68,7 +70,7 @@ function ResolverManager:updateState(action, params)
 
       -- Reset batter/pitcher selected zones
       self.pitcherSelectedZone = -1
-      self.batterSelectedZone = -1
+      self.batterGuessedZone = -1
     end
   elseif (self.state == constants.STATE_PLAYERS_PITCH_RESOLVED) then
     if (action == constants.ACTION_RESOLVER_NEXT_PITCH) then
@@ -121,7 +123,7 @@ function ResolverManager:calculatePitchResultState(pitcherRoll, batterRoll)
 
   -- If zone is 0, that means that the batter isn't swinging
   -- Check the potential for a ball
-  if (self.batterSelectedZone == 0) then
+  if (self.batterGuessedZone == 0) then
     if (batterRoll * 1.2 > pitcherRoll) then
       state = constants.BALL
     else
