@@ -9,11 +9,12 @@ local widget = require("widget")
 
 -- Local imports
 local assetUtil = require("scenes.game.utilities.asset-util")
+local constants = require("scenes.game.utilities.constants")
 local mockData = require("scenes.game.utilities.fixtures.mock-data")
 
 -- Scene setup
 local scene = composer.newScene()
-local SCENE_NAME = "BATTER_STRIKE_ZONE_CREATION_SCENE"
+local SCENE_NAME = constants.SCENE_NAME_BATTER_STRIKE_ZONE_CREATION
 local sceneGroup
 
 -- Services
@@ -167,7 +168,6 @@ function scene:hide(event)
   local phase = event.phase
 
   if (phase == "did") then
-    -- Code here runs immediately after the scene goes entirely off screen
     viewManager:removeComponents(SCENE_NAME)
   end
 end
@@ -190,7 +190,6 @@ scene:addEventListener("destroy", scene)
 
 function onSelectZone(zone)
   selectedZone = zone
-
   renderSelectZoneText()
 end
 

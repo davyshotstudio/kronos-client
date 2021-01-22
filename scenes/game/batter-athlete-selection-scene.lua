@@ -9,10 +9,11 @@ local widget = require("widget")
 
 -- Local imports
 local assetUtil = require("scenes.game.utilities.asset-util")
+local constants = require("scenes.game.utilities.constants")
 
 -- Scene setup
 local scene = composer.newScene()
-local SCENE_NAME = "BATTER_ATHLETE_SELECTION_SCENE"
+local SCENE_NAME = constants.SCENE_NAME_BATTER_ATHLETE_SELECTION
 local sceneGroup
 
 -- Services

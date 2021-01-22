@@ -12,7 +12,8 @@ local BatterManager = {}
 -- Instantiate BatterManager (constructor)
 function BatterManager:new(options)
   local state = constants.STATE_BATTER_ZONE_SELECT
-  local selectedZone = options.selectedZone or -1
+  local guessedZone = options.guessedZone or -1
+  local guessedPitch = options.guessedPitch or -1
   local gameServer = options.resolverManager
   -- If true, we're still in the at bat (result was a strike or ball or foul)
   local isNextAtBat = false
@@ -20,10 +21,10 @@ function BatterManager:new(options)
 
   local batterManager = {
     state = state,
-    -- selectedZone is the zone guessed by the batter
-    selectedZone = selectedZone,
-    -- selectedPitch is the pitch guessed by the batter
-    selectedPitch = selectedPitch,
+    -- guessedZone is the zone guessed by the batter
+    guessedZone = guessedZone,
+    -- guessedPitch is the pitch guessed by the batter
+    guessedPitch = guessedPitch,
     isNextAtBat = isNextAtBat,
     availableBatters = availableBatters,
     gameServer = gameServer
@@ -41,10 +42,10 @@ function BatterManager:updateGameState(action, params)
     -- (1) Mark zone as selected
     -- (2) Update the state to STATE_BATTER_PITCH_PENDING to wait for other player
     if (action == constants.ACTION_BATTER_SELECT_ZONE) then
-      self.selectedZone = params.selectedZone
+      self.guessedZone = params.guessedZone
       self.gameServer:updateState(
         constants.ACTION_RESOLVER_BATTER_SELECT_ZONE,
-        {batterSelectedZone = params.selectedZone}
+        {batterGuessedZone = params.guessedZone, batterGuessedPitch = params.guessedPitch}
       )
       -- TODO (wilbert): Remove this when pitcher flow exists, for now this is manually triggering a "fake" pitcher zone select
       self.gameServer:updateState(constants.ACTION_RESOLVER_PITCHER_SELECT_ZONE, {pitcherSelectedZone = 1})
