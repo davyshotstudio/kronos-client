@@ -44,10 +44,10 @@ function scene:show(event)
           widget.newButton(
           {
             shape = "rect",
-            width = display.actualContentWidth,
-            height = display.actualContentHeight,
+            width = display.contentWidth,
+            height = display.actualContentHeight + 100,
             left = 0,
-            top = 0,
+            top = -100,
             onRelease = onBackgroundClick
           }
         )
