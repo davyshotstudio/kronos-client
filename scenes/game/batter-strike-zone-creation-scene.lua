@@ -25,18 +25,32 @@ local batterManager
 local onSelectZone
 local onSelectCard
 local onConfirmStrikeZone
+local onCardSwipe
 local renderSelectZoneText
 local renderConfirmButton
 local renderCardHand
+local renderSelectedCard
+local renderStrikeZone
+local renderCurrentBatter
+local isUsedInZone
 
 -- Local variables
-local selectedZone = 1
--- Strike zone is a table map of zone id to the card being used
-local strikeZone = {}
+local selectedZone
+local strikeZone
+local actionCards
+-- These two variables are used to help track when the user is holding down on a card
+local selectCardStartTime
+local selectCardHold = false
 
--- Action cards to use
--- TODO (wilbert): remove when we have real action cards
-local actionCards = mockData.batterActionCards
+function initializeVariables()
+  selectedZone = 1
+  -- Strike zone is a table map of zone id to the card being used
+  strikeZone = {}
+
+  -- Action cards to use
+  -- TODO (wilbert): remove when we have real action cards
+  actionCards = mockData.batterActionCards
+end
 
 -- -----------------------------------------------------------------------------------
 -- Scene event lifecycle functions
@@ -51,10 +65,12 @@ function scene:create(event)
 
   -- Register scene domain into the ViewManager
   viewManager:registerScene(SCENE_NAME)
+  initializeVariables()
 end
 
 function scene:show(event)
-  local sceneGroup = self.view
+  sceneGroup = self.view
+
   local phase = event.phase
 
   if (phase == "will") then
@@ -63,7 +79,7 @@ function scene:show(event)
       SCENE_NAME,
       "TEXT_BUILD_STRIKE_ZONE",
       (function()
-        local resultText = display.newText(sceneGroup, "Build your strike zone", 400, 80, native.systemFont, 24)
+        local resultText = display.newText(sceneGroup, "Build your strike zone", 400, 80, "asul.ttf", 24)
         resultText.x = display.contentCenterX
         resultText.y = 40
         resultText:setFillColor(1, 1, 1)
@@ -71,97 +87,11 @@ function scene:show(event)
       end)()
     )
 
-    -- Strike zone
-    viewManager:addComponent(
-      SCENE_NAME,
-      "BUTTON_ZONE_1",
-      (function()
-        local throwPitchButton =
-          widget.newButton {
-          label = "Zone 1",
-          labelColor = {default = {1.0}, over = {0.5}},
-          defaultFile = assetUtil.resolveAssetPath("button.png"),
-          overFile = assetUtil.resolveAssetPath("button-over.png"),
-          width = 80,
-          height = 80,
-          onRelease = function()
-            onSelectZone(1)
-          end
-        }
-        throwPitchButton.x = 20
-        throwPitchButton.y = display.contentCenterY - 40
-        return throwPitchButton
-      end)()
-    )
-
-    viewManager:addComponent(
-      SCENE_NAME,
-      "BUTTON_ZONE_2",
-      (function()
-        local throwPitchButton =
-          widget.newButton {
-          label = "Zone 2",
-          labelColor = {default = {1.0}, over = {0.5}},
-          defaultFile = assetUtil.resolveAssetPath("button.png"),
-          overFile = assetUtil.resolveAssetPath("button-over.png"),
-          width = 80,
-          height = 80,
-          onRelease = function()
-            onSelectZone(2)
-          end
-        }
-        throwPitchButton.x = 100
-        throwPitchButton.y = display.contentCenterY - 40
-        return throwPitchButton
-      end)()
-    )
-
-    viewManager:addComponent(
-      SCENE_NAME,
-      "BUTTON_ZONE_3",
-      (function()
-        local throwPitchButton =
-          widget.newButton {
-          label = "Zone 3",
-          labelColor = {default = {1.0}, over = {0.5}},
-          defaultFile = assetUtil.resolveAssetPath("button.png"),
-          overFile = assetUtil.resolveAssetPath("button-over.png"),
-          width = 80,
-          height = 80,
-          onRelease = function()
-            onSelectZone(3)
-          end
-        }
-        throwPitchButton.x = 20
-        throwPitchButton.y = display.contentCenterY + 40
-        return throwPitchButton
-      end)()
-    )
-
-    viewManager:addComponent(
-      SCENE_NAME,
-      "BUTTON_ZONE_4",
-      (function()
-        local throwPitchButton =
-          widget.newButton {
-          label = "Zone 4",
-          labelColor = {default = {1.0}, over = {0.5}},
-          defaultFile = assetUtil.resolveAssetPath("button.png"),
-          overFile = assetUtil.resolveAssetPath("button-over.png"),
-          width = 80,
-          height = 80,
-          onRelease = function()
-            onSelectZone(4)
-          end
-        }
-        throwPitchButton.x = 100
-        throwPitchButton.y = display.contentCenterY + 40
-        return throwPitchButton
-      end)()
-    )
+    renderStrikeZone()
+    renderCardHand()
+    renderCurrentBatter()
+    renderSelectZoneText()
   end
-  renderCardHand()
-  renderSelectZoneText()
 end
 
 function scene:hide(event)
@@ -169,6 +99,7 @@ function scene:hide(event)
 
   if (phase == "did") then
     viewManager:removeComponents(SCENE_NAME)
+    initializeVariables()
   end
 end
 
@@ -191,34 +122,65 @@ scene:addEventListener("destroy", scene)
 function onSelectZone(zone)
   selectedZone = zone
   renderSelectZoneText()
+  renderStrikeZone()
 end
 
-function onSelectCard(card)
-  strikeZone[selectedZone] = card
-
-  -- Move to the next zone as long as there's still
-  -- zones left
-  if (selectedZone < 4) then
-    selectedZone = selectedZone + 1
+-- Handle actions for selecting a card from the hand
+function onSelectCard(event, card, scrollView)
+  if (event.phase == "began") then
+    selectCardStartTime = event.time
+    selectCardHold = false
   end
-
-  -- If there are no more zones to fill,
-  -- show the confirm button
-  local allZonesFilled = true
-  for zone = 1, 4 do
-    if (strikeZone[zone] == nil) then
-      allZonesFilled = false
-      break
+  -- If the user is swiping, pass off focus to the scroll widget to allow scrolling
+  if (event.phase == "moved") then
+    if (event.time - selectCardStartTime > 500) then
+      -- TODO (wilbert): add popup screen for the expanded card info
+      print("expanded card info")
+      selectCardHold = true
+      return
     end
-  end
-  if (allZonesFilled) then
-    if (viewManager:getComponent(SCENE_NAME, "BUTTON_CONFIRM_ZONE_CREATION") == nil) then
-      renderConfirmButton()
+    local dx = math.abs((event.x - event.xStart))
+    if (dx > 10) then
+      scrollView:takeFocus(event)
     end
   end
 
-  -- TODO (wilbert): remove when UI is built out for this
-  renderSelectZoneText()
+  -- If the user is not swiping but tapping, treat as a click
+  if (event.phase == "ended") then
+    -- If user is holding down on the card, don't trigger assignment action
+    if (selectCardHold) then
+      return
+    end
+    local previousCardID = nil
+    if (strikeZone[selectedZone]) then
+      previousCardID = strikeZone[selectedZone]:getID()
+    end
+    strikeZone[selectedZone] = card
+    -- Move to the next zone as long as there's still
+    -- zones left
+    if (selectedZone < 4) then
+      selectedZone = selectedZone + 1
+    end
+
+    renderSelectZoneText()
+    renderStrikeZone()
+    renderSelectedCard(card:getID(), previousCardID)
+
+    -- If there are no more zones to fill,
+    -- show the confirm button
+    local allZonesFilled = true
+    for zone = 1, 4 do
+      if (strikeZone[zone] == nil) then
+        allZonesFilled = false
+        break
+      end
+    end
+    if (allZonesFilled) then
+      if (viewManager:getComponent(SCENE_NAME, "BUTTON_CONFIRM_ZONE_CREATION") == nil) then
+        renderConfirmButton()
+      end
+    end
+  end
 end
 
 function onConfirmStrikeZone()
@@ -229,7 +191,78 @@ end
 -- Scene render functions
 -- -----------------------------------------------------------------------------------
 
+function renderStrikeZone()
+  local group = display.newGroup()
+
+  for i = 1, 4 do
+    local cardText = i
+    local cardImage = ""
+    if (strikeZone[i] ~= nil) then
+      cardText = "Card: " .. strikeZone[i]:getID()
+      cardImage = assetUtil.resolveAssetPath(strikeZone[i]:getBattingAction():getPictureURL())
+    end
+
+    local zoneButtonSettings = {
+      width = 67,
+      height = 91,
+      onRelease = function()
+        onSelectZone(i)
+      end,
+      font = "asul.ttf"
+    }
+
+    if (cardImage == "") then
+      zoneButtonSettings["label"] = cardText
+      zoneButtonSettings["labelColor"] = {default = {1.0}, over = {0.5}}
+      zoneButtonSettings["shape"] = "rect"
+    else
+      zoneButtonSettings["defaultFile"] = cardImage
+    end
+
+    -- Strike zone
+    local zoneButton =
+      viewManager:addComponent(
+      SCENE_NAME,
+      "BUTTON_ZONE_" .. i,
+      (function()
+        local zoneButton = widget.newButton(zoneButtonSettings)
+        if (cardImage == "") then
+          zoneButton:setFillColor(0.6)
+        end
+
+        if (selectedZone == i) then
+          zoneButton:setFillColor(1, 0.75, 0, 1)
+        end
+        return zoneButton
+      end)()
+    )
+    group:insert(zoneButton)
+
+    -- Divide into top row and bottom row
+    zoneButton.x = 70 * ((i - 1) % 2)
+    if (i < 3) then
+      zoneButton.y = 34
+    else
+      zoneButton.y = 128
+    end
+
+    group.x = 60
+    group.y = 40
+  end
+end
+
 function renderSelectZoneText()
+  -- This is for debugging purposes only
+  if (system.getInfo("environment") ~= "x") then
+    return
+  end
+
+  local cardID = ""
+  print("selectedZone: " .. selectedZone)
+  if strikeZone[selectedZone] then
+    cardID = strikeZone[selectedZone]:getID()
+  end
+  print("cardID: " .. cardID)
   viewManager:addComponent(
     SCENE_NAME,
     "TEXT_ZONE_SELECTED",
@@ -237,15 +270,15 @@ function renderSelectZoneText()
       local resultText =
         display.newText(
         sceneGroup,
-        "Selected zone: " .. selectedZone .. ", CardID: " .. (strikeZone[selectedZone] or "unassigned"),
+        "Selected zone: " .. selectedZone .. ", CardID: " .. (cardID or "unassigned"),
         400,
         80,
-        native.systemFont,
+        system.nativeFont,
         24
       )
       resultText.x = 50
       resultText.y = 275
-      resultText:setFillColor(1, 1, 1)
+      resultText:setFillColor(1, 0, 0)
       return resultText
     end)()
   )
@@ -258,56 +291,116 @@ function renderConfirmButton()
     (function()
       local batterConfirmZoneButton =
         widget.newButton {
-        label = "Confirm strike zone",
+        label = "Confirm zone cards",
+        shape = "roundedRect",
         labelColor = {default = {1.0}, over = {0.5}},
-        defaultFile = assetUtil.resolveAssetPath("button.png"),
-        overFile = assetUtil.resolveAssetPath("button-over.png"),
-        width = 154,
+        fillColor = {default = {0, 0.5, 1, 0.7}, over = {0, 0.5, 1, 1}},
+        width = 160,
         height = 40,
-        onRelease = onConfirmStrikeZone
+        onRelease = onConfirmStrikeZone,
+        font = "asul.ttf",
+        x = display.contentWidth - 100,
+        y = display.contentHeight - 40
       }
-      batterConfirmZoneButton.x = display.contentCenterX + 60
-      batterConfirmZoneButton.y = 275
       return batterConfirmZoneButton
     end)()
   )
 end
 
 function renderCardHand()
-  for i, card in ipairs(actionCards) do
-    -- 4 cards on top row, 3 cards on bottom
-    local x, y
-    if (i <= 4) then
-      x = 200 + ((i - 1) * 90)
-      y = display.contentCenterY - 40
-    else
-      x = 200 + (((i - 4) - 1) * 90)
-      y = display.contentCenterY + 50
-    end
+  local scrollView =
+    widget.newScrollView(
+    ({
+      y = display.contentCenterY,
+      left = display.contentCenterX - 170,
+      width = display.actualContentWidth / 2 + 90,
+      height = display.actualContentHeight,
+      hideBackground = true,
+      verticalScrollDisabled = true
+    })
+  )
 
-    viewManager:addComponent(
+  for i, card in ipairs(actionCards) do
+    local x, y
+    x = 75 + ((i - 1) * 150)
+    y = display.contentCenterY
+
+    local actionCardView =
+      viewManager:addComponent(
       SCENE_NAME,
       "ACTION_CARD_" .. card:getID(),
       (function()
         local cardButton =
           widget.newButton {
           label = "Card: " .. card:getID(),
-          labelColor = {default = {1.0}, over = {0.5}},
-          defaultFile = assetUtil.resolveAssetPath("button.png"),
-          overFile = assetUtil.resolveAssetPath("button-over.png"),
-          width = 80,
-          height = 80,
-          onRelease = function()
-            onSelectCard(card:getID())
+          labelColor = {default = {0.5}, over = {1}},
+          font = "asul.ttf",
+          defaultFile = assetUtil.resolveAssetPath(card:getBattingAction():getPictureURL()),
+          width = 130,
+          height = 182,
+          onEvent = function(event)
+            onSelectCard(event, card, scrollView)
           end
         }
-        cardButton.x = x
-        cardButton.y = y
-        cardButton:setFillColor(1, 0, 0.7)
         return cardButton
       end)()
     )
+
+    scrollView:insert(actionCardView)
+    actionCardView.x = x
+    actionCardView.y = y
+
+    renderSelectedCard(card:getID())
   end
+end
+
+-- Apply styling to selected cards in the hand
+-- Optionally take in the previous card to remove its styling
+function renderSelectedCard(selectedCardID, previousCardID)
+  if (previousCardID ~= nil) then
+    local actionCardView = viewManager:getComponent(SCENE_NAME, "ACTION_CARD_" .. previousCardID)
+    actionCardView:setFillColor(1)
+  end
+
+  local actionCardView = viewManager:getComponent(SCENE_NAME, "ACTION_CARD_" .. selectedCardID)
+  if (isUsedInZone(selectedCardID)) then
+    actionCardView:setFillColor(0.3)
+  end
+end
+
+function renderCurrentBatter()
+  local batter = batterManager:getResolverManager():getBatter()
+  local currentBatterView =
+    viewManager:addComponent(
+    SCENE_NAME,
+    "CURRENT_BATTER" .. batter:getID(),
+    (function()
+      local currentBatterView =
+        widget.newButton {
+        font = "asul.ttf",
+        defaultFile = assetUtil.resolveAssetPath(batter:getPictureURL()),
+        width = 130,
+        height = 182
+      }
+      currentBatterView.x = 95
+      currentBatterView.y = display.contentHeight - 40
+      return currentBatterView
+    end)()
+  )
+end
+
+-- -----------------------------------------------------------------------------------
+-- Helper functions
+-- -----------------------------------------------------------------------------------
+
+-- Check each zone to see if card was selected already
+function isUsedInZone(cardID)
+  for _, strikeZoneCard in ipairs(strikeZone) do
+    if strikeZoneCard:getID() == cardID then
+      return true
+    end
+  end
+  return false
 end
 
 return scene

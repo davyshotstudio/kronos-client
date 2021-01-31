@@ -14,9 +14,9 @@ local pitchingStaff = {
       positions = {"p", "ss"},
       skill = skill:new({floor = 0, ceiling = 100}),
       pitches = {
-        pitch:new({ id = 1, name = "FASTBALL", abbreviation = "FB"}),
-        pitch:new({ id = 2, name = "CHANGEUP", abbreviation = "CH"}),
-        pitch:new({ id = 3, name = "CURVEBALL", abbreviation = "CB"}),
+        pitch:new({id = 1, name = "FASTBALL", abbreviation = "FB"}),
+        pitch:new({id = 2, name = "CHANGEUP", abbreviation = "CH"}),
+        pitch:new({id = 3, name = "CURVEBALL", abbreviation = "CB"})
       }
     }
   )
@@ -61,7 +61,7 @@ local batterActionCards = {
           id = "1",
           name = "Gonnorhea",
           description = "Infects gonorrhea and slows your pitch speeds down",
-          pictureURL = "zeus.jpg"
+          pictureURL = "action_card_sample.png"
         }
       )
     }
@@ -74,7 +74,7 @@ local batterActionCards = {
           id = "2",
           name = "Gonnorhea",
           description = "Infects gonorrhea and slows your pitch speeds down",
-          pictureURL = "zeus.jpg"
+          pictureURL = "action_card_sample_2.png"
         }
       )
     }
@@ -87,7 +87,7 @@ local batterActionCards = {
           id = "3",
           name = "Gonnorhea",
           description = "Infects gonorrhea and slows your pitch speeds down",
-          pictureURL = "zeus.jpg"
+          pictureURL = "action_card_sample.png"
         }
       )
     }
@@ -100,7 +100,7 @@ local batterActionCards = {
           id = "4",
           name = "Gonnorhea",
           description = "Infects gonorrhea and slows your pitch speeds down",
-          pictureURL = "zeus.jpg"
+          pictureURL = "action_card_sample_2.png"
         }
       )
     }
@@ -113,7 +113,7 @@ local batterActionCards = {
           id = "5",
           name = "Gonnorhea",
           description = "Infects gonorrhea and slows your pitch speeds down",
-          pictureURL = "zeus.jpg"
+          pictureURL = "action_card_sample.png"
         }
       )
     }
@@ -126,7 +126,7 @@ local batterActionCards = {
           id = "6",
           name = "Gonnorhea",
           description = "Infects gonorrhea and slows your pitch speeds down",
-          pictureURL = "zeus.jpg"
+          pictureURL = "action_card_sample_2.png"
         }
       )
     }
@@ -139,7 +139,7 @@ local batterActionCards = {
           id = "7",
           name = "Gonnorhea",
           description = "Infects gonorrhea and slows your pitch speeds down",
-          pictureURL = "zeus.jpg"
+          pictureURL = "action_card_sample.png"
         }
       )
     }
