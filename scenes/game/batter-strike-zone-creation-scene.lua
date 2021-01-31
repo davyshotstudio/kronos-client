@@ -356,8 +356,6 @@ end
 -- Apply styling to selected cards in the hand
 -- Optionally take in the previous card to remove its styling
 function renderSelectedCard(selectedCardID, previousCardID)
-  print(selectedCardID)
-  print(previousCardID)
   if (previousCardID ~= nil) then
     local previousCardActionView = viewManager:getComponent(SCENE_NAME, "ACTION_CARD_" .. previousCardID)
     previousCardActionView:setFillColor(1)
