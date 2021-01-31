@@ -26,12 +26,14 @@ local onSelectZone
 local onSelectCard
 local onConfirmStrikeZone
 local onCardSwipe
+local onCurrentBatterZoom
 local renderSelectZoneText
 local renderConfirmButton
 local renderCardHand
 local renderSelectedCard
 local renderStrikeZone
 local renderCurrentBatter
+local popAwayBatterCard
 
 -- Local variables
 local selectedZone
@@ -39,7 +41,8 @@ local strikeZone
 local actionCards
 -- These two variables are used to help track when the user is holding down on a card
 local selectCardStartTime
-local selectCardHold = false
+local selectCardHold
+local batterCardZoomed
 
 function initializeVariables()
   selectedZone = 1
@@ -49,6 +52,9 @@ function initializeVariables()
   -- Action cards to use
   -- TODO (wilbert): remove when we have real action cards
   actionCards = mockData.batterActionCards
+
+  selectCardHold = false
+  batterCardZoomed = false
 end
 
 -- -----------------------------------------------------------------------------------
@@ -68,8 +74,6 @@ function scene:create(event)
 end
 
 function scene:show(event)
-  sceneGroup = self.view
-
   local phase = event.phase
 
   if (phase == "will") then
@@ -182,6 +186,17 @@ function onSelectCard(event, card, scrollView)
   end
 end
 
+-- Handle when user clicks on a the batter card
+function onCurrentBatterZoom(event)
+  event.target:toFront()
+  if (batterCardZoomed) then
+    popAwayBatterCard()
+    return
+  end
+  transition.moveTo(event.target, {y = display.contentHeight - 100, time = 300, transition = easing.outBack})
+  batterCardZoomed = true
+end
+
 function onConfirmStrikeZone()
   composer.gotoScene("scenes.game.batter-swing-selection-scene")
 end
@@ -191,6 +206,10 @@ end
 -- -----------------------------------------------------------------------------------
 
 function renderStrikeZone()
+  -- Close any popups
+  popAwayBatterCard()
+
+  -- Create new group for the strike zone
   local group = display.newGroup()
 
   for i = 1, 4 do
@@ -370,20 +389,31 @@ function renderCurrentBatter()
   local currentBatterView =
     viewManager:addComponent(
     SCENE_NAME,
-    "CURRENT_BATTER" .. batter:getID(),
+    "CURRENT_BATTER_CARD",
     (function()
       local currentBatterView =
         widget.newButton {
         font = "asul.ttf",
         defaultFile = assetUtil.resolveAssetPath(batter:getPictureURL()),
         width = 130,
-        height = 182
+        height = 182,
+        onPress = onCurrentBatterZoom
       }
       currentBatterView.x = 95
-      currentBatterView.y = display.contentHeight - 40
+      currentBatterView.y = display.contentHeight
       return currentBatterView
     end)()
   )
+end
+
+-- -----------------------------------------------------------------------------------
+-- Helper functions
+-- -----------------------------------------------------------------------------------
+
+function popAwayBatterCard()
+  local currentBatterCardView = viewManager:getComponent(SCENE_NAME, "CURRENT_BATTER_CARD")
+  transition.moveTo(currentBatterCardView, {y = display.contentHeight, time = 300, transition = easing.inBack})
+  batterCardZoomed = false
 end
 
 return scene
