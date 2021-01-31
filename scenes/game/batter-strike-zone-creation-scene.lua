@@ -11,6 +11,7 @@ local widget = require("widget")
 local assetUtil = require("scenes.game.utilities.asset-util")
 local constants = require("scenes.game.utilities.constants")
 local mockData = require("scenes.game.utilities.fixtures.mock-data")
+local eventHandlers = require("scenes.game.utilities.event-handlers")
 
 -- Scene setup
 local scene = composer.newScene()
@@ -130,30 +131,22 @@ end
 
 -- Handle actions for selecting a card from the hand
 function onSelectCard(event, card, scrollView)
-  if (event.phase == "began") then
-    selectCardStartTime = event.time
-    selectCardHold = false
-  end
-  -- If the user is swiping, pass off focus to the scroll widget to allow scrolling
-  if (event.phase == "moved") then
-    if (event.time - selectCardStartTime > 500) then
-      -- TODO (wilbert): add popup screen for the expanded card info
-      print("expanded card info")
-      selectCardHold = true
-      return
-    end
-    local dx = math.abs((event.x - event.xStart))
-    if (dx > 10) then
-      scrollView:takeFocus(event)
-    end
+  local holdFunction = function()
+    -- Options table for the overlay scene "pause.lua"
+    local options = {
+      isModal = true,
+      effect = "zoomInOut",
+      time = 200,
+      params = {
+        card = card
+      }
+    }
+
+    -- By some method such as a "pause" button, show the overlay
+    composer.showOverlay("scenes.game.batter-card-zoomed-overlay", options)
   end
 
-  -- If the user is not swiping but tapping, treat as a click
-  if (event.phase == "ended") then
-    -- If user is holding down on the card, don't trigger assignment action
-    if (selectCardHold) then
-      return
-    end
+  local tapFunction = function()
     local previousCardID = nil
     if (strikeZone[selectedZone]) then
       previousCardID = strikeZone[selectedZone]:getID()
@@ -184,10 +177,13 @@ function onSelectCard(event, card, scrollView)
       end
     end
   end
+
+  eventHandlers.onUserActionEvent(event, {hold = holdFunction, tap = tapFunction}, {scrollView = scrollView})
 end
 
 -- Handle when user clicks on a the batter card
 function onCurrentBatterZoom(event)
+  -- Pop the batter card to the top
   event.target:toFront()
   if (batterCardZoomed) then
     popAwayBatterCard()
@@ -267,6 +263,8 @@ function renderStrikeZone()
     group.x = 60
     group.y = 40
   end
+
+  sceneGroup:insert(group)
 end
 
 function renderSelectZoneText()
@@ -334,7 +332,8 @@ function renderCardHand()
       width = display.actualContentWidth / 2 + 90,
       height = display.actualContentHeight,
       hideBackground = true,
-      verticalScrollDisabled = true
+      verticalScrollDisabled = true,
+      friction = 0.85
     })
   )
 
@@ -367,9 +366,9 @@ function renderCardHand()
     scrollView:insert(actionCardView)
     actionCardView.x = x
     actionCardView.y = y
-
-    -- renderSelectedCard(card:getID())
   end
+
+  sceneGroup:insert(scrollView)
 end
 
 -- Apply styling to selected cards in the hand
@@ -401,6 +400,7 @@ function renderCurrentBatter()
       }
       currentBatterView.x = 95
       currentBatterView.y = display.contentHeight
+      sceneGroup:insert(currentBatterView)
       return currentBatterView
     end)()
   )

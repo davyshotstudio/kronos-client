@@ -33,7 +33,7 @@ end
 -- Getters for Action properties
 -------------------------------------
 
-function Action:getId()
+function Action:getID()
   return self.id
 end
 
