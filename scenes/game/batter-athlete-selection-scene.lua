@@ -54,7 +54,7 @@ function scene:show(event)
       SCENE_NAME,
       "TEXT_SELECT_BATTER",
       (function()
-        local resultText = display.newText(sceneGroup, "Select your batter", 400, 80, native.systemFont, 24)
+        local resultText = display.newText(sceneGroup, "Select your batter", 400, 80, "asul.ttf", 24)
         resultText.x = display.contentCenterX
         resultText.y = 40
         resultText:setFillColor(1, 1, 1)
@@ -123,16 +123,17 @@ function renderBatterSelectConfirmButton()
     (function()
       local batterConfirmButton =
         widget.newButton {
+        shape = "roundedRect",
         label = "Confirm",
         labelColor = {default = {1.0}, over = {0.5}},
-        defaultFile = assetUtil.resolveAssetPath("button.png"),
-        overFile = assetUtil.resolveAssetPath("button-over.png"),
-        width = 154,
+        fillColor = {default = {0, 0.5, 1, 0.7}, over = {0, 0.5, 1, 1}},
+        font = "asul.ttf",
+        width = 152,
         height = 40,
         onRelease = onConfirmBatterCard
       }
-      batterConfirmButton.x = 30 + 200 * (selectedBatterCardIndex - 1)
-      batterConfirmButton.y = 275
+      batterConfirmButton.x = display.contentWidth / 4 * selectedBatterCardIndex
+      batterConfirmButton.y = 280
       return batterConfirmButton
     end)()
   )
@@ -159,7 +160,8 @@ function renderBatterCardSelection()
             end
           }
         )
-        batterImg.x = 30 + 200 * (i - 1)
+        print(display.contentWidth)
+        batterImg.x = (display.contentWidth / (#availableBatters + 1) * i)
         batterImg.y = display.contentCenterY + 20
         return batterImg
       end)()

@@ -49,6 +49,7 @@ function ViewManager:addComponent(sceneName, componentName, component)
 
   -- Else store component in the ViewManager
   self.components[sceneName][componentName] = component
+  return component
 end
 
 -- Retrieve a component from the ViewManager given a key

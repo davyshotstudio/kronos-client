@@ -77,11 +77,11 @@ function initializeSceneView(sceneGroup)
     (function()
       local startGameButton =
         widget.newButton {
-        sceneGroup = sceneGroup,
+        font = "asul.ttf",
         label = "Start game",
         labelColor = {default = {1.0}, over = {0.5}},
-        defaultFile = assetUtil.resolveAssetPath("button.png"),
-        overFile = assetUtil.resolveAssetPath("button-over.png"),
+        shape = "roundedRect",
+        fillColor = {default = {0, 0.5, 1, 0.7}, over = {0, 0.5, 1, 1}},
         width = 154,
         height = 40,
         onRelease = startGame
