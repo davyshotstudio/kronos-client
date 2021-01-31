@@ -45,9 +45,9 @@ function scene:show(event)
           {
             shape = "rect",
             width = display.actualContentWidth,
-            height = display.actualContentHeight,
+            height = display.actualContentHeight + 100,
             left = 0,
-            top = 0,
+            top = -100,
             onRelease = onBackgroundClick
           }
         )
