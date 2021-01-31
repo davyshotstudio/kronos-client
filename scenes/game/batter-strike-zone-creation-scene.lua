@@ -32,7 +32,6 @@ local renderCardHand
 local renderSelectedCard
 local renderStrikeZone
 local renderCurrentBatter
-local isUsedInZone
 
 -- Local variables
 local selectedZone
@@ -350,22 +349,22 @@ function renderCardHand()
     actionCardView.x = x
     actionCardView.y = y
 
-    renderSelectedCard(card:getID())
+    -- renderSelectedCard(card:getID())
   end
 end
 
 -- Apply styling to selected cards in the hand
 -- Optionally take in the previous card to remove its styling
 function renderSelectedCard(selectedCardID, previousCardID)
+  print(selectedCardID)
+  print(previousCardID)
   if (previousCardID ~= nil) then
-    local actionCardView = viewManager:getComponent(SCENE_NAME, "ACTION_CARD_" .. previousCardID)
-    actionCardView:setFillColor(1)
+    local previousCardActionView = viewManager:getComponent(SCENE_NAME, "ACTION_CARD_" .. previousCardID)
+    previousCardActionView:setFillColor(1)
   end
 
   local actionCardView = viewManager:getComponent(SCENE_NAME, "ACTION_CARD_" .. selectedCardID)
-  if (isUsedInZone(selectedCardID)) then
-    actionCardView:setFillColor(0.3)
-  end
+  actionCardView:setFillColor(0.3)
 end
 
 function renderCurrentBatter()
@@ -387,20 +386,6 @@ function renderCurrentBatter()
       return currentBatterView
     end)()
   )
-end
-
--- -----------------------------------------------------------------------------------
--- Helper functions
--- -----------------------------------------------------------------------------------
-
--- Check each zone to see if card was selected already
-function isUsedInZone(cardID)
-  for _, strikeZoneCard in ipairs(strikeZone) do
-    if strikeZoneCard:getID() == cardID then
-      return true
-    end
-  end
-  return false
 end
 
 return scene
