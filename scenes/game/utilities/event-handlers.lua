@@ -18,12 +18,12 @@
 -- }
 --
 
-local holdStartTime
-local isHeld
+local holdStartTime = 0
+local isHeld = false
 
 local function onUserActionEvent(event, actions, options)
   -- Pull out options or assign defaults
-  local holdTime = options.holdTime or 300
+  local holdTime = options.holdTime or 150
   local scrollView = options.scrollView or nil
 
   if (event.phase == "began") then
