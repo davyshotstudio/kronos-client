@@ -24,6 +24,7 @@ local batterManager
 local onGuessZone
 local onGuessPitch
 local renderMatchup
+local renderBackground
 local renderZoneGuessSelection
 local renderPitchGuessSelection
 local renderStatus
@@ -51,6 +52,7 @@ function scene:show(event)
   local phase = event.phase
 
   if (phase == "will") then
+    renderBackground()
     renderZoneGuessSelection()
     renderPitchGuessSelection()
     renderConfirmButton()
@@ -85,6 +87,7 @@ scene:addEventListener("destroy", scene)
 function onGuessZone(zone)
   guessedZone = zone
   renderStatus()
+  renderZoneGuessSelection()
 end
 
 function onGuessPitch(pitchID)
@@ -93,7 +96,11 @@ function onGuessPitch(pitchID)
 end
 
 function onConfirm()
-  local newState = batterManager:updateGameState(constants.ACTION_BATTER_SELECT_ZONE, {guessedZone = guessedZone, guessedPitch = guessedPitch})
+  local newState =
+    batterManager:updateGameState(
+    constants.ACTION_BATTER_SELECT_ZONE,
+    {guessedZone = guessedZone, guessedPitch = guessedPitch}
+  )
   -- In multiplayer, this should be triggered automatically when both players have finished their selections
   newState = batterManager:updateGameState(constants.ACTION_BATTER_RESOLVE_PITCH)
 
@@ -104,28 +111,48 @@ end
 -- Scene render functions
 -- -----------------------------------------------------------------------------------
 
+function renderBackground()
+  -- Background
+  viewManager:addComponent(
+    SCENE_NAME,
+    "TEXT_BUILD_STRIKE_ZONE",
+    (function()
+      local background =
+        display.newImageRect(
+        sceneGroup,
+        assetUtil.resolveAssetPath("field.png"),
+        display.actualContentWidth,
+        display.actualContentHeight
+      )
+      background.anchorX = 0
+      background.anchorY = 0
+      background.x = 0 + display.screenOriginX
+    end)()
+  )
+end
+
 function renderConfirmButton()
   viewManager:addComponent(
-      SCENE_NAME,
-      "BUTTON_CONFIRM_GUESSES",
-      (function()
-        local confirmGuessButton =
-          widget.newButton {
-          label = "Confirm swing",
-          labelColor = {default = {1.0}, over = {0.5}},
-          width = 150,
-          height = 50,
-          shape = "roundedRect",
-          fillColor = {default = {1, 0.2, 0.1, 0.7}, over = {1, 0.2, 0.5, 1}},
-          onRelease = function()
-            onConfirm()
-          end
-        }
-        confirmGuessButton.x = display.contentCenterX
-        confirmGuessButton.y = 300
-        return confirmGuessButton
-      end)()
-    )
+    SCENE_NAME,
+    "BUTTON_CONFIRM_GUESSES",
+    (function()
+      local confirmGuessButton =
+        widget.newButton {
+        label = "Confirm swing",
+        labelColor = {default = {1.0}, over = {0.5}},
+        width = 150,
+        height = 50,
+        shape = "roundedRect",
+        fillColor = {default = {1, 0.2, 0.1, 0.7}, over = {1, 0.2, 0.5, 1}},
+        onRelease = function()
+          onConfirm()
+        end
+      }
+      confirmGuessButton.x = display.contentWidth - 100
+      confirmGuessButton.y = 300
+      return confirmGuessButton
+    end)()
+  )
 end
 
 function renderPitchGuessSelection()
@@ -148,8 +175,10 @@ function renderPitchGuessSelection()
             onGuessPitch(pitch.id)
           end
         }
-        guessZoneButton.x = 150
-        guessZoneButton.y = 100 + (i - 1) * 60
+        guessZoneButton.anchorX = 1
+        guessZoneButton.anchorY = 0
+        guessZoneButton.x = display.contentWidth - 150
+        guessZoneButton.y = 10 + (i - 1) * 60
         return guessZoneButton
       end)()
     )
@@ -157,116 +186,52 @@ function renderPitchGuessSelection()
 end
 
 function renderZoneGuessSelection()
+  local group = display.newGroup()
+
   -- Create resolve button to resolve pitch
-  viewManager:addComponent(
-    SCENE_NAME,
-    "BUTTON_GUESS_ZONE_1",
-    (function()
-      local throwPitchButton =
-        widget.newButton {
-        label = "Zone 1",
-        labelColor = {default = {1.0}, over = {0.5}},
-        defaultFile = assetUtil.resolveAssetPath("button.png"),
-        overFile = assetUtil.resolveAssetPath("button-over.png"),
-        width = 80,
-        height = 80,
-        onRelease = function()
-          onGuessZone(1)
-        end
-      }
-      throwPitchButton.x = display.contentCenterX
-      throwPitchButton.y = display.contentCenterY - 80
-      return throwPitchButton
-    end)()
-  )
+  for i = 1, 4 do
+    local cardText = i
 
-  viewManager:addComponent(
-    SCENE_NAME,
-    "BUTTON_GUESS_ZONE_2",
-    (function()
-      local throwPitchButton =
-        widget.newButton {
-        label = "Zone 2",
-        labelColor = {default = {1.0}, over = {0.5}},
-        defaultFile = assetUtil.resolveAssetPath("button.png"),
-        overFile = assetUtil.resolveAssetPath("button-over.png"),
-        width = 80,
-        height = 80,
-        onRelease = function()
-          onGuessZone(2)
-        end
-      }
-      throwPitchButton.x = display.contentCenterX + 80
-      throwPitchButton.y = display.contentCenterY - 80
-      return throwPitchButton
-    end)()
-  )
+    local zoneButtonSettings = {
+      width = 67,
+      height = 91,
+      font = "asul.ttf",
+      defaultFile = assetUtil.resolveAssetPath("action_card_sample.png"),
+      label = cardText,
+      labelColor = {default = {1.0}, over = {0.5}},
+      onRelease = function()
+        onGuessZone(i)
+      end
+    }
 
-  viewManager:addComponent(
-    SCENE_NAME,
-    "BUTTON_GUESS_ZONE_3",
-    (function()
-      local throwPitchButton =
-        widget.newButton {
-        label = "Zone 3",
-        labelColor = {default = {1.0}, over = {0.5}},
-        defaultFile = assetUtil.resolveAssetPath("button.png"),
-        overFile = assetUtil.resolveAssetPath("button-over.png"),
-        width = 80,
-        height = 80,
-        onRelease = function()
-          onGuessZone(3)
+    -- Strike zone
+    local zoneButton =
+      viewManager:addComponent(
+      SCENE_NAME,
+      "BUTTON_GUESS_ZONE_" .. i,
+      (function()
+        local zoneButton = widget.newButton(zoneButtonSettings)
+        if (guessedZone == i) then
+          zoneButton:setFillColor(1, 0.75, 0, 1)
         end
-      }
-      throwPitchButton.x = display.contentCenterX + 80
-      throwPitchButton.y = display.contentCenterY
-      return throwPitchButton
-    end)()
-  )
+        return zoneButton
+      end)()
+    )
+    group:insert(zoneButton)
 
-  viewManager:addComponent(
-    SCENE_NAME,
-    "BUTTON_GUESS_ZONE_4",
-    (function()
-      local throwPitchButton =
-        widget.newButton {
-        label = "Zone 4",
-        labelColor = {default = {1.0}, over = {0.5}},
-        defaultFile = assetUtil.resolveAssetPath("button.png"),
-        overFile = assetUtil.resolveAssetPath("button-over.png"),
-        width = 80,
-        height = 80,
-        onRelease = function()
-          onGuessZone(4)
-        end
-      }
-      throwPitchButton.x = display.contentCenterX
-      throwPitchButton.y = display.contentCenterY
-      return throwPitchButton
-    end)()
-  )
+    -- Divide into top row and bottom row
+    zoneButton.x = 70 * ((i - 1) % 2)
+    if (i < 3) then
+      zoneButton.y = 34
+    else
+      zoneButton.y = 128
+    end
 
-  viewManager:addComponent(
-    SCENE_NAME,
-    "BUTTON_NO_SWING",
-    (function()
-      local throwPitchButton =
-        widget.newButton {
-        label = "No swing",
-        labelColor = {default = {1.0}, over = {0.5}},
-        defaultFile = assetUtil.resolveAssetPath("button.png"),
-        overFile = assetUtil.resolveAssetPath("button-over.png"),
-        width = 160,
-        height = 80,
-        onRelease = function()
-          onGuessZone(0)
-        end
-      }
-      throwPitchButton.x = display.contentCenterX + 40
-      throwPitchButton.y = display.contentCenterY + 80
-      return throwPitchButton
-    end)()
-  )
+    group.x = 240
+    group.y = display.contentHeight - 214
+  end
+
+  sceneGroup:insert(group)
 end
 
 function renderMatchup()
@@ -283,8 +248,10 @@ function renderMatchup()
           height = 210
         }
       )
-      batterImg.x = 30
-      batterImg.y = display.contentCenterY
+      batterImg.anchorX = 0
+      batterImg.anchorY = 1
+      batterImg.x = 20
+      batterImg.y = display.contentHeight - 20
       return batterImg
     end)()
   )
@@ -298,12 +265,14 @@ function renderMatchup()
         widget.newButton(
         {
           defaultFile = assetUtil.resolveAssetPath(pitcher:getPictureURL()),
-          width = 150,
-          height = 210
+          width = 150 * 0.7,
+          height = 210 * 0.7
         }
       )
-      pitcherImg.x = display.contentWidth - 30
-      pitcherImg.y = display.contentCenterY
+      pitcherImg.anchorX = 1
+      pitcherImg.anchorY = 0
+      pitcherImg.x = display.contentWidth - 10
+      pitcherImg.y = 10
       return pitcherImg
     end)()
   )
@@ -313,12 +282,12 @@ function renderMatchup()
     SCENE_NAME,
     "SWING_SELECTION_COUNT",
     (function()
-      local resultText =
-        display.newText(sceneGroup, "Count: " .. balls .. " - " .. strikes, 400, 80, native.systemFont, 24)
-      resultText.x = display.contentCenterX
-      resultText.y = 20
-      resultText:setFillColor(1, 1, 1)
-      return resultText
+      local countText = display.newText(sceneGroup, "Count: " .. balls .. " - " .. strikes, 400, 80, "asul.ttf", 24)
+      countText.anchorY = 0
+      countText.x = display.contentCenterX
+      countText.y = 20
+      countText:setFillColor(1, 1, 1)
+      return countText
     end)()
   )
 end
@@ -328,7 +297,17 @@ function renderStatus()
     SCENE_NAME,
     "TEXT_GUESSED_PITCHES",
     (function()
-      local resultText = display.newText(sceneGroup, "Pitch: " .. guessedPitch .. ", Zone: " .. guessedZone, 400, 80, native.systemFont, 24)
+      local resultText =
+        display.newText(
+        sceneGroup,
+        "Pitch: " .. guessedPitch .. ", Zone: " .. guessedZone,
+        400,
+        80,
+        native.systemFont,
+        24
+      )
+      resultText.anchorX = 0
+      resultText.anchorY = 0
       resultText.x = 20
       resultText.y = 20
       resultText:setFillColor(1, 1, 1)

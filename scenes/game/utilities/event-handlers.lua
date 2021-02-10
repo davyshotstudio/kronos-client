@@ -33,6 +33,16 @@ local function onUserActionEvent(event, actions, options)
 
   -- If the user is swiping, pass off focus to the scroll widget to allow scrolling
   if (event.phase == "moved") then
+    -- Ignore scroll option if not available
+    -- This is for compatiblity with the scroller widget to allow
+    -- scrolling when you swipe on a button in the scroller
+    if (scrollView ~= nil) then
+      local dx = math.abs((event.x - event.xStart))
+      if (dx > 10) then
+        scrollView:takeFocus(event)
+      end
+    end
+
     if (event.time - holdStartTime > holdTime) then
       if (isHeld) then
         return
@@ -45,19 +55,8 @@ local function onUserActionEvent(event, actions, options)
       end
 
       actions["hold"]()
+      -- isHeld = false
       return
-    end
-
-    -- Ignore scroll option if not available
-    -- This is for compatiblity with the scroller widget to allow
-    -- scrolling when you swipe on a button in the scroller
-    if (scrollView == nil) then
-      return
-    end
-
-    local dx = math.abs((event.x - event.xStart))
-    if (dx > 10) then
-      scrollView:takeFocus(event)
     end
   end
 

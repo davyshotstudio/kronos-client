@@ -62,7 +62,7 @@ end
 -- -----------------------------------------------------------------------------------
 
 function startGame()
-  composer.gotoScene("scenes.game.batter-strike-zone-creation-scene")
+  composer.gotoScene("scenes.game.batter-athlete-selection-scene")
 end
 
 -- -----------------------------------------------------------------------------------
