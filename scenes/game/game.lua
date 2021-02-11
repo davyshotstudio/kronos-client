@@ -5,13 +5,16 @@
 
 local composer = require("composer")
 local widget = require("widget")
+local SolarWebSockets = require "plugin.solarwebsockets"
+local json = require("json")
 
 local assetUtil = require("scenes.game.utilities.asset-util")
 
 -- DI modules
-local resolverManagerModule = require("scenes.game.services.resolver-manager")
+local dataStoreModule = require("scenes.game.services.data-store")
 local batterManagerModule = require("scenes.game.services.batter-manager")
 local viewManagerModule = require("scenes.game.services.view-manager")
+local socketManagerModule = require("scenes.game.services.socket-manager")
 
 -- Initialize scene variables
 local scene = composer.newScene()
@@ -30,6 +33,7 @@ local clearMatchup
 local sceneGroup
 local viewManager
 local batterManager
+local socketManager
 
 -- create() is executed on first load and runs only once (initialize values here)
 function scene:create(event)
@@ -39,13 +43,19 @@ function scene:create(event)
   viewManager = viewManagerModule:new()
   viewManager:registerScene(SCENE_NAME)
 
-  -- ResolverManager is a temporary AI to mock the response of the server
-  local resolverManager = resolverManagerModule:new({balls = 0, strikes = 0})
-  batterManager = batterManagerModule:new({resolverManager = resolverManager})
+  -- DataStore is a temporary AI to mock the response of the server
+  local dataStore = dataStoreModule:new({balls = 0, strikes = 0})
+  batterManager = batterManagerModule:new({dataStore = dataStore})
+
+  -- SocketManager manages the socket lifecycle and provides listeners to
+  -- for bidirectional client/server requests and responses
+  socketManager = socketManagerModule:new({dataStore = dataStore})
+  socketManager:connect("wss://echo.websocket.org")
 
   -- Register the service managers into the global composer for easy access
   composer.setVariable("viewManager", viewManager)
   composer.setVariable("batterManager", batterManager)
+  composer.setVariable("socketManager", socketManager)
 end
 
 function scene:show(event)
@@ -62,6 +72,14 @@ end
 -- -----------------------------------------------------------------------------------
 
 function startGame()
+  local testResponse = {
+    state = "HELLO",
+    pitchResultState = "PENIS",
+    balls = 1,
+    strikes = 2
+  }
+  SolarWebSockets.sendServer(json.encode({statusCode = 200, type = "game_update", body = testResponse}))
+  -- {statusCode = 200, body = "hi"}
   composer.gotoScene("scenes.game.batter-athlete-selection-scene")
 end
 

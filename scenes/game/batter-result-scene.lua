@@ -43,7 +43,7 @@ function scene:show(event)
 
   if (phase == "will") then
     -- Show the result of the pitch
-    local pitcherRoll, batterRoll = batterManager:getResolverManager():getLastRolls()
+    local pitcherRoll, batterRoll = batterManager:getDataStore():getLastRolls()
     -- Add result
     viewManager:addComponent(
       SCENE_NAME,
@@ -53,7 +53,7 @@ function scene:show(event)
           display.newText(
           sceneGroup,
           "Result: " ..
-            batterManager:getResolverManager():getPitchResultState() ..
+            batterManager:getDataStore():getPitchResultState() ..
               " (pitcher: " .. pitcherRoll .. ", batter: " .. batterRoll .. ")",
           400,
           80,
@@ -71,7 +71,7 @@ function scene:show(event)
       SCENE_NAME,
       "TEXT_BATTER_COUNT",
       (function()
-        local balls, strikes = batterManager:getResolverManager():getCount()
+        local balls, strikes = batterManager:getDataStore():getCount()
         local resultText =
           display.newText(sceneGroup, "Count: " .. ": " .. balls .. " - " .. strikes, 400, 80, native.systemFont, 24)
         resultText.x = display.contentCenterX
