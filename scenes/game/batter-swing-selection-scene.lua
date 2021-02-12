@@ -156,7 +156,7 @@ function renderConfirmButton()
 end
 
 function renderPitchGuessSelection()
-  local pitches = batterManager:getResolverManager():getPitcher():getPitches()
+  local pitches = batterManager:getDataStore():getPitcher():getPitches()
   for i, pitch in ipairs(pitches) do
     viewManager:addComponent(
       SCENE_NAME,
@@ -235,7 +235,7 @@ function renderZoneGuessSelection()
 end
 
 function renderMatchup()
-  local batter = batterManager:getResolverManager():getBatter()
+  local batter = batterManager:getDataStore():getBatter()
   viewManager:addComponent(
     SCENE_NAME,
     "CARD_ACTIVE_BATTER",
@@ -256,7 +256,7 @@ function renderMatchup()
     end)()
   )
 
-  local pitcher = batterManager:getResolverManager():getPitcher()
+  local pitcher = batterManager:getDataStore():getPitcher()
   viewManager:addComponent(
     SCENE_NAME,
     "CARD_ACTIVE_PITCHER",
@@ -277,7 +277,7 @@ function renderMatchup()
     end)()
   )
 
-  local balls, strikes = batterManager:getResolverManager():getCount()
+  local balls, strikes = batterManager:getDataStore():getCount()
   viewManager:addComponent(
     SCENE_NAME,
     "SWING_SELECTION_COUNT",

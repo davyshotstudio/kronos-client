@@ -384,7 +384,7 @@ function renderSelectedCard(selectedCardID, previousCardID)
 end
 
 function renderCurrentBatter()
-  local batter = batterManager:getResolverManager():getBatter()
+  local batter = batterManager:getDataStore():getBatter()
   local currentBatterView =
     viewManager:addComponent(
     SCENE_NAME,

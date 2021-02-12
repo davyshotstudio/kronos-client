@@ -5,13 +5,16 @@
 
 local composer = require("composer")
 local widget = require("widget")
+local SolarWebSockets = require "plugin.solarwebsockets"
+local json = require("json")
 
 local assetUtil = require("scenes.game.utilities.asset-util")
 
 -- DI modules
-local resolverManagerModule = require("scenes.game.services.resolver-manager")
+local dataStoreModule = require("scenes.game.services.data-store")
 local batterManagerModule = require("scenes.game.services.batter-manager")
 local viewManagerModule = require("scenes.game.services.view-manager")
+local socketManagerModule = require("scenes.game.services.socket-manager")
 
 -- Initialize scene variables
 local scene = composer.newScene()
@@ -20,6 +23,7 @@ local SCENE_NAME = "GAME"
 
 -- Local function declarations
 local initializeSceneView
+local initializeLoading
 local updateSceneUI
 local clearMatchup
 
@@ -30,6 +34,7 @@ local clearMatchup
 local sceneGroup
 local viewManager
 local batterManager
+local socketManager
 
 -- create() is executed on first load and runs only once (initialize values here)
 function scene:create(event)
@@ -39,13 +44,19 @@ function scene:create(event)
   viewManager = viewManagerModule:new()
   viewManager:registerScene(SCENE_NAME)
 
-  -- ResolverManager is a temporary AI to mock the response of the server
-  local resolverManager = resolverManagerModule:new({balls = 0, strikes = 0})
-  batterManager = batterManagerModule:new({resolverManager = resolverManager})
+  -- DataStore is a local cache store containing responses from the server
+  local dataStore = dataStoreModule:new({balls = 0, strikes = 0})
+  batterManager = batterManagerModule:new({dataStore = dataStore})
+
+  -- SocketManager manages the socket lifecycle and provides listeners to
+  -- for bidirectional client/server requests and responses
+  socketManager = socketManagerModule:new({dataStore = dataStore})
+  socketManager:connect("wss://echo.websocket.org")
 
   -- Register the service managers into the global composer for easy access
   composer.setVariable("viewManager", viewManager)
   composer.setVariable("batterManager", batterManager)
+  composer.setVariable("socketManager", socketManager)
 end
 
 function scene:show(event)
@@ -53,7 +64,11 @@ function scene:show(event)
   local phase = event.phase
 
   if (phase == "will") then
-    initializeSceneView(sceneGroup)
+    if (event.params and event.params.isSocketConnectionReady == true) then
+      initializeSceneView(sceneGroup)
+    else
+      initializeLoading(sceneGroup)
+    end
   end
 end
 
@@ -62,8 +77,36 @@ end
 -- -----------------------------------------------------------------------------------
 
 function startGame()
+  local testResponse = {
+    state = "HELLO",
+    pitchResultState = "PENIS",
+    balls = 1,
+    strikes = 2
+  }
+  SolarWebSockets.sendServer(json.encode({statusCode = 200, type = "game_update", body = testResponse}))
+
   composer.gotoScene("scenes.game.batter-athlete-selection-scene")
 end
+
+function scene:hide(event)
+  local sceneGroup = self.view
+  local phase = event.phase
+
+  if phase == "did" then
+    viewManager:removeComponents(SCENE_NAME)
+  end
+end
+
+function scene:destroy(event)
+end
+
+---------------------------------------------------------------------------------
+-- Listener setup (default Solar2D events)
+scene:addEventListener("create", scene)
+scene:addEventListener("show", scene)
+scene:addEventListener("hide", scene)
+scene:addEventListener("destroy", scene)
+-----------------------------------------------------------------------------------------
 
 -- -----------------------------------------------------------------------------------
 -- UI instantions and updates
@@ -93,24 +136,17 @@ function initializeSceneView(sceneGroup)
   )
 end
 
-function scene:hide(event)
-  local sceneGroup = self.view
-  local phase = event.phase
-
-  if phase == "did" then
-    viewManager:removeComponents(SCENE_NAME)
-  end
+function initializeLoading(sceneGroup)
+  viewManager:addComponent(
+    SCENE_NAME,
+    "GAME_LOADING",
+    (function()
+      local loadingText = display.newText(sceneGroup, "loading...", 400, 80, "asul.ttf", 24)
+      loadingText.x = display.contentCenterX
+      loadingText.y = display.contentCenterY
+      loadingText:setFillColor(1, 1, 1)
+      return loadingText
+    end)()
+  )
 end
-
-function scene:destroy(event)
-end
-
----------------------------------------------------------------------------------
--- Listener setup (default Solar2D events)
-scene:addEventListener("create", scene)
-scene:addEventListener("show", scene)
-scene:addEventListener("hide", scene)
-scene:addEventListener("destroy", scene)
------------------------------------------------------------------------------------------
-
 return scene

@@ -92,8 +92,8 @@ scene:addEventListener("destroy", scene)
 
 -- Action for when the player confirms and locks in a batter athlete card
 function onConfirmBatterCard()
-  batterManager:getResolverManager():setBatter(selectedBatterCard)
-  print(batterManager:getResolverManager():getBatter():getName())
+  batterManager:getDataStore():setBatter(selectedBatterCard)
+  print(batterManager:getDataStore():getBatter():getName())
   composer.gotoScene("scenes.game.batter-strike-zone-creation-scene")
 end
 
@@ -142,7 +142,7 @@ end
 -- Display the available athletes options to be the batter
 -- Grab the available batters to be selected
 function renderBatterCardSelection()
-  local availableBatters = batterManager:getAvailableBatters()
+  local availableBatters = batterManager:getDataStore():getAvailableBatters()
   for i, batter in ipairs(availableBatters) do
     -- Create the batter card UI
     viewManager:addComponent(
@@ -160,7 +160,6 @@ function renderBatterCardSelection()
             end
           }
         )
-        print(display.contentWidth)
         batterImg.x = (display.contentWidth / (#availableBatters + 1) * i)
         batterImg.y = display.contentCenterY + 20
         return batterImg

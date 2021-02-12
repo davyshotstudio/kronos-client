@@ -1,16 +1,17 @@
 --------------------------------------------------------------------
--- ResolverManager manages logic in an at-bat between a pitcher and a batter
+-- DataStore manages all of the state in a game. This is the local
+-- clients source of truth, all data here will be synced with the
+-- server and cached in this file
 --------------------------------------------------------------------
-
 local constants = require("scenes.game.utilities.constants")
 local config = require("scenes.game.utilities.config")
 -- TODO: Remove when no more mocks are needed
 local mockData = require("scenes.game.utilities.fixtures.mock-data")
 
-local ResolverManager = {}
+local DataStore = {}
 
--- Instantiate ResolverManager (constructor)
-function ResolverManager:new(options)
+-- Instantiate DataStore (constructor)
+function DataStore:new(options)
   local state = constants.STATE_PLAYERS_PITCH_PENDING
   local pitchResultState = constants.NONE
   local balls = options.balls or 0
@@ -22,8 +23,9 @@ function ResolverManager:new(options)
   local batterGuessedPitch = options.batterGuessedPitch or 0
   local lastPitcherRoll = -1
   local lastBatterRoll = -1
+  local availableBatters = options.availableBatters or mockData.battingLineup
 
-  local resolverManager = {
+  local dataStore = {
     state = state,
     pitchResultState = pitchResultState,
     balls = balls,
@@ -34,16 +36,22 @@ function ResolverManager:new(options)
     batterGuessedZone = batterGuessedZone,
     batterGuessedPitch = batterGuessedPitch,
     lastPitcherRoll = lastPitcherRoll,
-    lastBatterRoll = lastBatterRoll
+    lastBatterRoll = lastBatterRoll,
+    availableBatters = availableBatters
   }
 
-  setmetatable(resolverManager, self)
+  setmetatable(dataStore, self)
   self.__index = self
 
-  return resolverManager
+  return dataStore
 end
 
-function ResolverManager:updateState(action, params)
+-- Listeners to server push events
+function listeners()
+  -- Map datafields to the proper field
+end
+
+function DataStore:updateState(action, params)
   if (self.state == constants.STATE_PLAYERS_PITCH_PENDING) then
     if (action == constants.ACTION_RESOLVER_BATTER_SELECT_ZONE) then
       self.batterGuessedZone = params.batterGuessedZone
@@ -95,7 +103,7 @@ local function roll(player)
 end
 
 -- Run the matchup for a single pitch
-function ResolverManager:resolvePitch(pitcher, batter)
+function DataStore:resolvePitch(pitcher, batter)
   local pitcherRoll = roll(pitcher)
   local batterRoll = roll(batter)
 
@@ -118,7 +126,7 @@ function ResolverManager:resolvePitch(pitcher, batter)
 end
 
 -- Update state machine for the at bat
-function ResolverManager:calculatePitchResultState(pitcherRoll, batterRoll)
+function DataStore:calculatePitchResultState(pitcherRoll, batterRoll)
   local result = batterRoll - pitcherRoll
 
   -- If zone is 0, that means that the batter isn't swinging
@@ -153,36 +161,72 @@ function ResolverManager:calculatePitchResultState(pitcherRoll, batterRoll)
   return state
 end
 
-function ResolverManager:getState()
+-- ---------------------------------------------------------
+-- Getters and setters for individual fields
+-- ---------------------------------------------------------
+
+function DataStore:getState()
   return self.state
 end
 
-function ResolverManager:getBatter()
+function DataStore:setState(state)
+  self.state = state
+end
+
+function DataStore:getBatter()
   return self.batter
 end
 
-function ResolverManager:setBatter(batter)
+function DataStore:setBatter(batter)
   self.batter = batter
 end
 
-function ResolverManager:getPitcher()
+function DataStore:getPitcher()
   return self.pitcher
 end
 
-function ResolverManager:setPitcher(pitcher)
+function DataStore:setPitcher(pitcher)
   self.pitcher = pitcher
 end
 
-function ResolverManager:getLastRolls()
+function DataStore:getLastRolls()
   return self.lastPitcherRoll, self.lastBatterRoll
 end
 
-function ResolverManager:getPitchResultState()
+function DataStore:setLastRollsPitcher(lastPitcherRoll)
+  self.lastPitcherRoll = lastPitcherRoll
+end
+
+function DataStore:setLastRollsBatter(lastBatterRoll)
+  self.lastBatterRoll = lastBatterRoll
+end
+
+function DataStore:getPitchResultState()
   return self.pitchResultState
 end
 
-function ResolverManager:getCount()
+function DataStore:setPitchResultState(pitchResultState)
+  self.pitchResultState = pitchResultState
+end
+
+function DataStore:getCount()
   return self.balls, self.strikes
 end
 
-return ResolverManager
+function DataStore:setCountBalls(balls)
+  self.balls = balls
+end
+
+function DataStore:setCountStrikes(strikes)
+  self.strikes = strikes
+end
+
+function DataStore:getAvailableBatters()
+  return self.availableBatters
+end
+
+function DataStore:setAvailableBatters(availableBatters)
+  self.availableBatters = availableBatters
+end
+
+return DataStore

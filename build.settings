@@ -42,7 +42,10 @@ settings =
 	--
 	plugins =
 	{
-
+		["plugin.solarwebsockets"] =
+		{
+			publisherId = "io.joehinkle",
+		},
 	},
 
 	--
