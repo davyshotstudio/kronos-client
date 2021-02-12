@@ -23,6 +23,7 @@ local SCENE_NAME = "GAME"
 
 -- Local function declarations
 local initializeSceneView
+local initializeLoading
 local updateSceneUI
 local clearMatchup
 
@@ -43,7 +44,7 @@ function scene:create(event)
   viewManager = viewManagerModule:new()
   viewManager:registerScene(SCENE_NAME)
 
-  -- DataStore is a temporary AI to mock the response of the server
+  -- DataStore is a local cache store containing responses from the server
   local dataStore = dataStoreModule:new({balls = 0, strikes = 0})
   batterManager = batterManagerModule:new({dataStore = dataStore})
 
@@ -63,7 +64,11 @@ function scene:show(event)
   local phase = event.phase
 
   if (phase == "will") then
-    initializeSceneView(sceneGroup)
+    if (event.params and event.params.isSocketConnectionReady == true) then
+      initializeSceneView(sceneGroup)
+    else
+      initializeLoading(sceneGroup)
+    end
   end
 end
 
@@ -79,9 +84,29 @@ function startGame()
     strikes = 2
   }
   SolarWebSockets.sendServer(json.encode({statusCode = 200, type = "game_update", body = testResponse}))
-  -- {statusCode = 200, body = "hi"}
+
   composer.gotoScene("scenes.game.batter-athlete-selection-scene")
 end
+
+function scene:hide(event)
+  local sceneGroup = self.view
+  local phase = event.phase
+
+  if phase == "did" then
+    viewManager:removeComponents(SCENE_NAME)
+  end
+end
+
+function scene:destroy(event)
+end
+
+---------------------------------------------------------------------------------
+-- Listener setup (default Solar2D events)
+scene:addEventListener("create", scene)
+scene:addEventListener("show", scene)
+scene:addEventListener("hide", scene)
+scene:addEventListener("destroy", scene)
+-----------------------------------------------------------------------------------------
 
 -- -----------------------------------------------------------------------------------
 -- UI instantions and updates
@@ -111,24 +136,17 @@ function initializeSceneView(sceneGroup)
   )
 end
 
-function scene:hide(event)
-  local sceneGroup = self.view
-  local phase = event.phase
-
-  if phase == "did" then
-    viewManager:removeComponents(SCENE_NAME)
-  end
+function initializeLoading(sceneGroup)
+  viewManager:addComponent(
+    SCENE_NAME,
+    "GAME_LOADING",
+    (function()
+      local loadingText = display.newText(sceneGroup, "loading...", 400, 80, "asul.ttf", 24)
+      loadingText.x = display.contentCenterX
+      loadingText.y = display.contentCenterY
+      loadingText:setFillColor(1, 1, 1)
+      return loadingText
+    end)()
+  )
 end
-
-function scene:destroy(event)
-end
-
----------------------------------------------------------------------------------
--- Listener setup (default Solar2D events)
-scene:addEventListener("create", scene)
-scene:addEventListener("show", scene)
-scene:addEventListener("hide", scene)
-scene:addEventListener("destroy", scene)
------------------------------------------------------------------------------------------
-
 return scene

@@ -4,6 +4,7 @@
 --------------------------------------------------------------------
 local SolarWebSockets = require("plugin.solarwebsockets")
 local json = require("json")
+local composer = require("composer")
 
 local SocketManager = {}
 
@@ -54,6 +55,15 @@ function SocketManager:_socketListener(event)
     -- Connection events
     if event.name == "join" then
       print("socket connection established")
+
+      -- Reload the current scene when connected
+      local currentScene = composer.getSceneName("current")
+      composer.gotoScene(
+        currentScene,
+        {
+          params = {isSocketConnectionReady = true}
+        }
+      )
     end
     if event.name == "message" then
       print("got message from server")
