@@ -10,6 +10,8 @@ local widget = require("widget")
 -- Local imports
 local assetUtil = require("scenes.game.utilities.asset-util")
 local constants = require("scenes.game.utilities.constants")
+local eventHandlers = require("scenes.game.utilities.event-handlers")
+local modals = require("scenes.game.utilities.modals")
 
 -- Scene setup
 local scene = composer.newScene()
@@ -28,6 +30,8 @@ local renderBackground
 local renderZoneGuessSelection
 local renderPitchGuessSelection
 local renderStatus
+local getPitchByID
+local getActionCardByPitchID
 
 -- Local variables
 local guessedPitch = 0
@@ -84,16 +88,35 @@ scene:addEventListener("destroy", scene)
 -- Callback functions
 -- -----------------------------------------------------------------------------------
 
-function onGuessZone(zone)
-  guessedZone = zone
-  renderStatus()
-  renderZoneGuessSelection()
+function onGuessZone(event, zone)
+  local tapFunction = function()
+    guessedZone = zone
+    renderStatus()
+    renderZoneGuessSelection()
+  end
+
+  local holdFunction = function()
+  end
+
+  eventHandlers.onUserActionEvent(event, {hold = holdFunction, tap = tapFunction}, {})
 end
 
-function onGuessPitch(pitchID)
-  guessedPitch = pitchID
-  renderStatus()
-  renderPitchGuessSelection()
+function onGuessPitch(event, pitchID)
+  local tapFunction = function()
+    guessedPitch = pitchID
+    renderStatus()
+    renderPitchGuessSelection()
+  end
+
+  local holdFunction = function()
+    local card = getActionCardByPitchID(pitchID)
+    if (card == nil) then
+      return
+    end
+    modals.showCardModal(card, card:getPitchingAction():getPictureURL())
+  end
+
+  eventHandlers.onUserActionEvent(event, {hold = holdFunction, tap = tapFunction}, {})
 end
 
 function onConfirm()
@@ -108,6 +131,7 @@ function onConfirm()
   -- Execute the pitch
   composer.gotoScene("scenes.game.batter-result-scene")
 end
+
 -- -----------------------------------------------------------------------------------
 -- Scene render functions
 -- -----------------------------------------------------------------------------------
@@ -151,35 +175,26 @@ function renderConfirmButton()
       }
       confirmGuessButton.x = display.contentWidth - 100
       confirmGuessButton.y = 300
+      sceneGroup:insert(confirmGuessButton)
       return confirmGuessButton
     end)()
   )
 end
 
--- getPitchByID retrives a pitch entity stored in the current pitcher entity
-function getPitchByID(pitchID)
-  local pitcher = batterManager:getDataStore():getPitcher()
-  local pitch = pitcher:getPitches()[pitchID]
-  if (pitch == nil) then
-    error("invalid pitch selected: " .. pitchID)
-  end
-  return pitch
-end
-
 function renderPitchGuessSelection()
+  local group = display.newGroup()
+
   local pitchCardsMap = batterManager:getDataStore():getInPlayPitcherActionCardsMap()
   local index = 1
   for pitchID, actionCardID in pairs(pitchCardsMap) do
-    local pitcherActionCards = batterManager:getDataStore():getPitcherActionCards()
-    if (pitcherActionCards == nil or #pitcherActionCards < 1) then
-      error("invalid pitcher action cards")
-      return
-    end
-
     -- Get pitch information
     local pitch = getPitchByID(pitchID)
     -- Get action card information
-    local pitcherActionCard = pitcherActionCards[pitchID]
+    local pitcherActionCard = getActionCardByPitchID(pitchID)
+    if (pitcherActionCard == nil) then
+      error("pitch action card not assigned to pitch: " .. pitchID)
+      return
+    end
 
     viewManager:addComponent(
       SCENE_NAME,
@@ -191,9 +206,8 @@ function renderPitchGuessSelection()
           height = 70,
           label = pitch:getID(),
           defaultFile = assetUtil.resolveAssetPath(pitcherActionCard:getPitchingAction():getPictureURL()),
-          -- fillColor = {default = {1, 0.2, 0.5, 0.7}, over = {1, 0.2, 0.5, 1}},
-          onRelease = function()
-            onGuessPitch(pitch:getID())
+          onEvent = function(event)
+            onGuessPitch(event, pitch:getID())
           end
         }
         guessPitchButton.anchorX = 1
@@ -205,6 +219,7 @@ function renderPitchGuessSelection()
         if (guessedPitch == pitch:getID()) then
           guessPitchButton:setFillColor(1, 0.75, 0, 1)
         end
+        group:insert(guessPitchButton)
         return guessPitchButton
       end)()
     )
@@ -213,7 +228,7 @@ function renderPitchGuessSelection()
       SCENE_NAME,
       "BUTTON_GUESS_PITCH_ICON_" .. pitch:getID(),
       (function()
-        local guessZoneButton =
+        local guessPitchIconButton =
           widget.newButton {
           label = pitch:getAbbreviation(),
           labelColor = {default = {1.0}, over = {0.5}},
@@ -222,19 +237,22 @@ function renderPitchGuessSelection()
           shape = "roundedRect",
           cornerRadius = "50",
           fillColor = {default = {1, 0.2, 0.5, 0.7}, over = {1, 0.2, 0.5, 1}},
-          onRelease = function()
-            onGuessPitch(pitch:getID())
+          onEvent = function(event)
+            onGuessPitch(event, pitch:getID())
           end
         }
-        guessZoneButton.anchorX = 1
-        guessZoneButton.anchorY = 0
-        guessZoneButton.x = display.contentWidth - 140
-        guessZoneButton.y = 60 + (index - 1) * 85
-        return guessZoneButton
+        guessPitchIconButton.anchorX = 1
+        guessPitchIconButton.anchorY = 0
+        guessPitchIconButton.x = display.contentWidth - 140
+        guessPitchIconButton.y = 60 + (index - 1) * 85
+        group:insert(guessPitchIconButton)
+        return guessPitchIconButton
       end)()
     )
     index = index + 1
   end
+
+  sceneGroup:insert(group)
 end
 
 function renderZoneGuessSelection()
@@ -251,8 +269,8 @@ function renderZoneGuessSelection()
       defaultFile = assetUtil.resolveAssetPath("action_card_sample.png"),
       label = cardText,
       labelColor = {default = {1.0}, over = {0.5}},
-      onRelease = function()
-        onGuessZone(i)
+      onRelease = function(event)
+        onGuessZone(event, i)
       end
     }
 
@@ -304,6 +322,7 @@ function renderMatchup()
       batterImg.anchorY = 1
       batterImg.x = 20
       batterImg.y = display.contentHeight - 20
+      sceneGroup:insert(batterImg)
       return batterImg
     end)()
   )
@@ -325,6 +344,7 @@ function renderMatchup()
       pitcherImg.anchorY = 0
       pitcherImg.x = display.contentWidth - 10
       pitcherImg.y = 10
+      sceneGroup:insert(pitcherImg)
       return pitcherImg
     end)()
   )
@@ -366,6 +386,33 @@ function renderStatus()
       return resultText
     end)()
   )
+end
+
+-- getPitchByID retrives a pitch entity stored in the current pitcher entity
+function getPitchByID(pitchID)
+  local pitcher = batterManager:getDataStore():getPitcher()
+  local pitch = pitcher:getPitches()[pitchID]
+  if (pitch == nil) then
+    error("invalid pitch selected: " .. pitchID)
+  end
+  return pitch
+end
+
+-- getActionCardByPitchID gets an action card associated assigned to a provided pitchID
+function getActionCardByPitchID(pitchID)
+  local pitchCardsMap = batterManager:getDataStore():getInPlayPitcherActionCardsMap()
+  if (pitchCardsMap == nil or #pitchCardsMap < 1) then
+    error("invalid pitch card")
+    return
+  end
+  local actionCardID = pitchCardsMap[pitchID]
+  local pitcherActionCards = batterManager:getDataStore():getPitcherActionCards()
+  if (pitcherActionCards == nil or #pitcherActionCards < 1) then
+    error("invalid pitcher action cards")
+    return
+  end
+  local card = pitcherActionCards[actionCardID]
+  return card
 end
 
 return scene

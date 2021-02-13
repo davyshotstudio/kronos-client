@@ -12,6 +12,7 @@ local assetUtil = require("scenes.game.utilities.asset-util")
 local constants = require("scenes.game.utilities.constants")
 local mockData = require("scenes.game.utilities.fixtures.mock-data")
 local eventHandlers = require("scenes.game.utilities.event-handlers")
+local modals = require("scenes.game.utilities.modals")
 
 -- Scene setup
 local scene = composer.newScene()
@@ -132,18 +133,7 @@ end
 -- Handle actions for selecting a card from the hand
 function onSelectCard(event, card, scrollView)
   local holdFunction = function()
-    -- Options table for the overlay scene "pause.lua"
-    local options = {
-      isModal = true,
-      effect = "zoomInOut",
-      time = 200,
-      params = {
-        card = card
-      }
-    }
-
-    -- By some method such as a "pause" button, show the overlay
-    composer.showOverlay("scenes.game.batter-card-zoomed-overlay", options)
+    modals.showCardModal(card, card:getBattingAction():getPictureURL())
   end
 
   local tapFunction = function()
