@@ -24,6 +24,14 @@ function DataStore:new(options)
   local lastPitcherRoll = -1
   local lastBatterRoll = -1
   local availableBatters = options.availableBatters or mockData.battingLineup
+  -- (List) Deck containing available action cards a pitcher can use
+  local pitcherActionCards = options.pitcherActionCards or mockData.pitcherActionCards
+  -- (List) Deck containing available action cards a batter can use
+  local batterActionCards = options.batterActionCards or mockData.batterActionCards
+  -- Map containing key of pitchID and value of the action card ID the pitcher has assigned
+  local inPlayPitcherActionCardsMap = options.inPlayPitcherActionCardsMap or mockData.inPlayPitcherActionCardsMap
+  -- Map containing key of zone and value of the action card ID the batter has assigned
+  local inPlayBatterActionCardsMap = options.inPlayBatterActionCardsMap or mockData.inPlayBatterActionCardsMap
 
   local dataStore = {
     state = state,
@@ -37,7 +45,11 @@ function DataStore:new(options)
     batterGuessedPitch = batterGuessedPitch,
     lastPitcherRoll = lastPitcherRoll,
     lastBatterRoll = lastBatterRoll,
-    availableBatters = availableBatters
+    availableBatters = availableBatters,
+    pitcherActionCards = pitcherActionCards,
+    batterActionCards = batterActionCards,
+    inPlayPitcherActionCardsMap = inPlayPitcherActionCardsMap,
+    inPlayBatterActionCardsMap = inPlayBatterActionCardsMap
   }
 
   setmetatable(dataStore, self)
@@ -227,6 +239,38 @@ end
 
 function DataStore:setAvailableBatters(availableBatters)
   self.availableBatters = availableBatters
+end
+
+function DataStore:getBatterActionCards()
+  return self.batterActionCards
+end
+
+function DataStore:setBatterActionCards(batterActionCards)
+  self.batterActionCards = batterActionCards
+end
+
+function DataStore:getPitcherActionCards()
+  return self.pitcherActionCards
+end
+
+function DataStore:setPitcherActionCards(pitcherActionCards)
+  self.pitcherActionCards = pitcherActionCards
+end
+
+function DataStore:getInPlayBatterActionCardsMap()
+  return self.inPlayBatterActionCardsMap
+end
+
+function DataStore:setInPlayBatterActionCardsMap(inPlayBatterActionCardsMap)
+  self.inPlayBatterActionCardsMap = inPlayBatterActionCardsMap
+end
+
+function DataStore:getInPlayPitcherActionCardsMap()
+  return self.inPlayPitcherActionCardsMap
+end
+
+function DataStore:setInPlayPitcherActionCardsMap(inPlayPitcherActionCardsMap)
+  self.inPlayPitcherActionCardsMap = inPlayPitcherActionCardsMap
 end
 
 return DataStore

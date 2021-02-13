@@ -32,6 +32,7 @@ function scene:show(event)
   local parent = event.parent -- Reference to the parent scene object
 
   local card = event.params["card"]
+  local cardImageURL = event.params["cardImageURL"]
 
   if (phase == "did") then
     -- Fake tin that covers the existing screen
@@ -66,7 +67,7 @@ function scene:show(event)
         local cardButton =
           widget.newButton {
           font = "asul.ttf",
-          defaultFile = assetUtil.resolveAssetPath(card:getBattingAction():getPictureURL())
+          defaultFile = assetUtil.resolveAssetPath(cardImageURL)
         }
         cardButton.x = display.contentCenterX
         cardButton.y = display.contentCenterY

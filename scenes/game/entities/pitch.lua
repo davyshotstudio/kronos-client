@@ -9,11 +9,13 @@ function Pitch:new(options)
   local id = options.id
   local name = options.name or ""
   local abbreviation = options.abbreviation or ""
+  local iconURL = options.iconURL or ""
 
   local pitch = {
     id = id,
     name = name,
     abbreviation = abbreviation,
+    iconURL = iconURL
   }
 
   setmetatable(pitch, self)
@@ -36,6 +38,10 @@ end
 
 function Pitch:getAbbreviation()
   return self.abbreviation
+end
+
+function Pitch:getIconURL()
+  return self.iconURL
 end
 
 return Pitch
