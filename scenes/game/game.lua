@@ -81,7 +81,9 @@ function startGame()
     state = "HELLO",
     pitchResultState = "PENIS",
     balls = 1,
-    strikes = 2
+    strikes = 2,
+    inning = 1,
+    outs = 2
   }
   SolarWebSockets.sendServer(json.encode({statusCode = 200, type = "game_update", body = testResponse}))
 

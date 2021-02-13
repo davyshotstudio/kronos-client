@@ -16,6 +16,8 @@ function DataStore:new(options)
   local pitchResultState = constants.NONE
   local balls = options.balls or 0
   local strikes = options.strikes or 0
+  local outs = options.outs or 0
+  local inning = options.inning or 0
   local pitcher = options.pitcher or mockData.pitchingStaff[1]
   local batter = options.batter or mockData.battingLineup[1]
   local pitcherSelectedZone = options.pitcherSelectedZone or 0
@@ -42,6 +44,8 @@ function DataStore:new(options)
     pitchResultState = pitchResultState,
     balls = balls,
     strikes = strikes,
+    outs = outs,
+    inning = inning,
     pitcher = pitcher,
     batter = batter,
     pitcherSelectedZone = pitcherSelectedZone,
@@ -307,6 +311,22 @@ end
 
 function DataStore:setAwayTeam(awayTeam)
   self.awayTeam = awayTeam
+end
+
+function DataStore:getInning()
+  return self.inning
+end
+
+function DataStore:setInning(inning)
+  self.inning = inning
+end
+
+function DataStore:getOuts()
+  return self.outs
+end
+
+function DataStore:setOuts(outs)
+  self.outs = outs
 end
 
 return DataStore
