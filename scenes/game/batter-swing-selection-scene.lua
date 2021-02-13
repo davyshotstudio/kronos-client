@@ -13,6 +13,7 @@ local constants = require("scenes.game.utilities.constants")
 local eventHandlers = require("scenes.game.utilities.event-handlers")
 local modals = require("scenes.game.utilities.modals")
 local scoreboard = require("scenes.game.widgets.scoreboard")
+local inningTracker = require("scenes.game.widgets.inning-tracker")
 
 -- Scene setup
 local scene = composer.newScene()
@@ -63,6 +64,7 @@ function scene:show(event)
     renderConfirmButton()
     renderMatchup()
     scoreboard(sceneGroup, SCENE_NAME)
+    inningTracker(sceneGroup, SCENE_NAME)
   end
 end
 
@@ -170,7 +172,7 @@ function renderConfirmButton()
         width = 150,
         height = 50,
         shape = "roundedRect",
-        fillColor = {default = {1, 0.2, 0.1, 0.7}, over = {1, 0.2, 0.5, 1}},
+        fillColor = {default = {1, 0.2, 0.1, 0.9}, over = {1, 0.2, 0.5, 1}},
         onRelease = function()
           onConfirm()
         end
@@ -208,6 +210,7 @@ function renderPitchGuessSelection()
           width = 50,
           height = 70,
           label = pitch:getID(),
+          labelColor = {default = {1.0}, over = {0.5}},
           defaultFile = assetUtil.resolveAssetPath(pitcherActionCard:getPitchingAction():getPictureURL()),
           onEvent = function(event)
             onGuessPitch(event, pitch:getID())
@@ -239,7 +242,7 @@ function renderPitchGuessSelection()
           height = 30,
           shape = "roundedRect",
           cornerRadius = "50",
-          fillColor = {default = {1, 0.2, 0.5, 0.7}, over = {1, 0.2, 0.5, 1}},
+          fillColor = {default = {1, 0.2, 0.5, 0.9}, over = {1, 0.2, 0.5, 1}},
           onEvent = function(event)
             onGuessPitch(event, pitch:getID())
           end
@@ -346,20 +349,6 @@ function renderMatchup()
       pitcherImg.y = 10
       sceneGroup:insert(pitcherImg)
       return pitcherImg
-    end)()
-  )
-
-  local balls, strikes = batterManager:getDataStore():getCount()
-  viewManager:addComponent(
-    SCENE_NAME,
-    "SWING_SELECTION_COUNT",
-    (function()
-      local countText = display.newText(sceneGroup, "Count: " .. balls .. " - " .. strikes, 400, 80, "asul.ttf", 24)
-      countText.anchorY = 0
-      countText.x = display.contentCenterX
-      countText.y = 20
-      countText:setFillColor(1, 1, 1)
-      return countText
     end)()
   )
 end

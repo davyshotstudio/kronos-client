@@ -23,7 +23,7 @@ local function scoreboard(parentSceneGroup, sceneName)
       local background = display.newRoundedRect(sceneGroup, 0, 0, 200, 27, 10)
       background.anchorX = 0
       background.anchorY = 0
-      background:setFillColor(0.2)
+      background:setFillColor(0.1)
       return background
     end)()
   )

@@ -99,7 +99,17 @@ function SocketManager:setData(fieldKey, value)
     lastRollsBatter = ds.setLastRollsBatter,
     balls = ds.setCountBalls,
     strikes = ds.setCountStrikes,
-    availableBatters = ds.setAvailableBatters
+    availableBatters = ds.setAvailableBatters,
+    outs = ds.setOuts,
+    inning = ds.setInning,
+    pitcherActionCards = ds.setPitcherActionCards,
+    batterActionCards = ds.setBatterActionCards,
+    inPlayPitcherActionCardsMap = ds.setInPlayPitcherActionCardsMap,
+    inPlayBatterActionCardsMap = ds.setInPlayBatterActionCardsMap,
+    awayScore = ds.setAwayScore,
+    homeScore = ds.setHomeScore,
+    awayTeam = ds.setAwayTeam,
+    homeTeam = ds.setHomeTeam
   }
 
   -- Update datastore for the provided key
