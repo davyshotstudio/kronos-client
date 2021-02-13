@@ -12,6 +12,7 @@ local assetUtil = require("scenes.game.utilities.asset-util")
 local constants = require("scenes.game.utilities.constants")
 local eventHandlers = require("scenes.game.utilities.event-handlers")
 local modals = require("scenes.game.utilities.modals")
+local scoreboard = require("scenes.game.widgets.scoreboard")
 
 -- Scene setup
 local scene = composer.newScene()
@@ -61,6 +62,7 @@ function scene:show(event)
     renderPitchGuessSelection()
     renderConfirmButton()
     renderMatchup()
+    scoreboard(sceneGroup, SCENE_NAME)
   end
 end
 
@@ -183,6 +185,7 @@ end
 
 function renderPitchGuessSelection()
   local group = display.newGroup()
+  sceneGroup:insert(group)
 
   local pitchCardsMap = batterManager:getDataStore():getInPlayPitcherActionCardsMap()
   local index = 1
@@ -251,12 +254,11 @@ function renderPitchGuessSelection()
     )
     index = index + 1
   end
-
-  sceneGroup:insert(group)
 end
 
 function renderZoneGuessSelection()
   local group = display.newGroup()
+  sceneGroup:insert(group)
 
   -- Create resolve button to resolve pitch
   for i = 1, 4 do
@@ -300,8 +302,6 @@ function renderZoneGuessSelection()
     group.x = 240
     group.y = display.contentHeight - 214
   end
-
-  sceneGroup:insert(group)
 end
 
 function renderMatchup()
