@@ -32,6 +32,10 @@ function DataStore:new(options)
   local inPlayPitcherActionCardsMap = options.inPlayPitcherActionCardsMap or mockData.inPlayPitcherActionCardsMap
   -- Map containing key of zone and value of the action card ID the batter has assigned
   local inPlayBatterActionCardsMap = options.inPlayBatterActionCardsMap or mockData.inPlayBatterActionCardsMap
+  local awayScore = options.awayScore or 0
+  local homeScore = options.homeScore or 0
+  local awayTeam = options.awayTeam or mockData.awayTeam
+  local homeTeam = options.homeTeam or mockData.homeTeam
 
   local dataStore = {
     state = state,
@@ -49,7 +53,11 @@ function DataStore:new(options)
     pitcherActionCards = pitcherActionCards,
     batterActionCards = batterActionCards,
     inPlayPitcherActionCardsMap = inPlayPitcherActionCardsMap,
-    inPlayBatterActionCardsMap = inPlayBatterActionCardsMap
+    inPlayBatterActionCardsMap = inPlayBatterActionCardsMap,
+    awayScore = awayScore,
+    homeScore = homeScore,
+    awayTeam = awayTeam,
+    homeTeam = homeTeam
   }
 
   setmetatable(dataStore, self)
@@ -271,6 +279,34 @@ end
 
 function DataStore:setInPlayPitcherActionCardsMap(inPlayPitcherActionCardsMap)
   self.inPlayPitcherActionCardsMap = inPlayPitcherActionCardsMap
+end
+
+function DataStore:getScore()
+  return self.awayScore, self.homeScore
+end
+
+function DataStore:setAwayScore(awayScore)
+  self.awayScore = awayScore
+end
+
+function DataStore:setHomeScore(homeScore)
+  self.homeScore = homeScore
+end
+
+function DataStore:getHomeTeam()
+  return self.homeTeam
+end
+
+function DataStore:setHomeTeam(homeTeam)
+  self.homeTeam = homeTeam
+end
+
+function DataStore:getAwayTeam()
+  return self.awayTeam
+end
+
+function DataStore:setAwayTeam(awayTeam)
+  self.awayTeam = awayTeam
 end
 
 return DataStore

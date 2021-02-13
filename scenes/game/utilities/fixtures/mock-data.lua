@@ -4,6 +4,7 @@ local action = require("scenes.game.entities.action")
 local athleteCard = require("scenes.game.entities.athlete-card")
 local pitch = require("scenes.game.entities.pitch")
 local skill = require("scenes.game.entities.skill")
+local team = require("scenes.game.entities.team")
 
 local pitchingStaff = {
   athleteCard:new(
@@ -224,10 +225,28 @@ local inPlayPitcherActionCardsMap = {
   [4] = 5
 }
 
+local awayTeam =
+  team:new(
+  {
+    id = 0,
+    name = "Dweebs"
+  }
+)
+
+local homeTeam =
+  team:new(
+  {
+    id = 0,
+    name = "Losers"
+  }
+)
+
 return {
   pitchingStaff = pitchingStaff,
   battingLineup = battingLineup,
   batterActionCards = batterActionCards,
   pitcherActionCards = pitcherActionCards,
-  inPlayPitcherActionCardsMap = inPlayPitcherActionCardsMap
+  inPlayPitcherActionCardsMap = inPlayPitcherActionCardsMap,
+  awayTeam = awayTeam,
+  homeTeam = homeTeam
 }
