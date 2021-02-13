@@ -65,6 +65,7 @@ function SocketManager:_socketListener(event)
         }
       )
     end
+
     if event.name == "message" then
       print("got message from server")
       message = json.decode(event.message)
@@ -75,6 +76,7 @@ function SocketManager:_socketListener(event)
         end
       end
     end
+
     if event.name == "leave" then
       -- not connected anymore
       print("disconnected from socket")

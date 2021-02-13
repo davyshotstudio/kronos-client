@@ -52,7 +52,7 @@ function initializeVariables()
 
   -- Action cards to use
   -- TODO (wilbert): remove when we have real action cards
-  actionCards = mockData.batterActionCards
+  actionCards = batterManager:getDataStore():getBatterActionCards()
 
   selectCardHold = false
   batterCardZoomed = false

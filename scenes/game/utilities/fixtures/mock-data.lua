@@ -14,9 +14,13 @@ local pitchingStaff = {
       positions = {"p", "ss"},
       skill = skill:new({floor = 0, ceiling = 100}),
       pitches = {
-        pitch:new({id = 1, name = "FASTBALL", abbreviation = "FB"}),
-        pitch:new({id = 2, name = "CHANGEUP", abbreviation = "CH"}),
-        pitch:new({id = 3, name = "CURVEBALL", abbreviation = "CB"})
+        [1] = pitch:new({id = 1, name = "FASTBALL", abbreviation = "FB"}),
+        [2] = pitch:new({id = 2, name = "CHANGEUP", abbreviation = "CH"}),
+        [3] = pitch:new({id = 3, name = "CURVEBALL", abbreviation = "CB"}),
+        [4] = pitch:new({id = 4, name = "SLIDER", abbreviation = "SL"}),
+        [5] = pitch:new({id = 5, name = "KNUCKLEBALL", abbreviation = "KN"}),
+        [6] = pitch:new({id = 6, name = "SCREWBALL", abbreviation = "SB"}),
+        [7] = pitch:new({id = 7, name = "SPLITTER", abbreviation = "SP"})
       }
     }
   )
@@ -146,8 +150,84 @@ local batterActionCards = {
   )
 }
 
+local pitcherActionCards = {
+  [1] = actionCard:new(
+    {
+      id = "1",
+      pitchingAction = action:new(
+        {
+          id = "7",
+          name = "Herpes",
+          description = "Infects herpes and makes your pitch break 40% more.",
+          pictureURL = "action_card_sample_2.png"
+        }
+      )
+    }
+  ),
+  [2] = actionCard:new(
+    {
+      id = "2",
+      pitchingAction = action:new(
+        {
+          id = "7",
+          name = "Gonnorhea",
+          description = "Infects gonorrhea and slows your fastball down 90%",
+          pictureURL = "action_card_sample.png"
+        }
+      )
+    }
+  ),
+  [3] = actionCard:new(
+    {
+      id = "3",
+      pitchingAction = action:new(
+        {
+          id = "8",
+          name = "Clamydia",
+          description = "Infects clamydia and speeds your pitch up",
+          pictureURL = "action_card_sample.png"
+        }
+      )
+    }
+  ),
+  [4] = actionCard:new(
+    {
+      id = "4",
+      pitchingAction = action:new(
+        {
+          id = "9",
+          name = "Syphillis",
+          description = "Infects syphillis and bumps your pitch ceiling up by 69%",
+          pictureURL = "action_card_sample_2.png"
+        }
+      )
+    }
+  ),
+  [5] = actionCard:new(
+    {
+      id = "5",
+      pitchingAction = action:new(
+        {
+          id = "10",
+          name = "Hepatitis",
+          description = "Infects hepatitis and drops your pitch speed up by 2%",
+          pictureURL = "action_card_sample.png"
+        }
+      )
+    }
+  )
+}
+
+local inPlayPitcherActionCardsMap = {
+  [1] = 1,
+  [3] = 4,
+  [4] = 5
+}
+
 return {
   pitchingStaff = pitchingStaff,
   battingLineup = battingLineup,
-  batterActionCards = batterActionCards
+  batterActionCards = batterActionCards,
+  pitcherActionCards = pitcherActionCards,
+  inPlayPitcherActionCardsMap = inPlayPitcherActionCardsMap
 }

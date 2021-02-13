@@ -93,6 +93,7 @@ end
 function onGuessPitch(pitchID)
   guessedPitch = pitchID
   renderStatus()
+  renderPitchGuessSelection()
 end
 
 function onConfirm()
@@ -126,7 +127,7 @@ function renderBackground()
       )
       background.anchorX = 0
       background.anchorY = 0
-      background.x = 0 + display.screenOriginX
+      background.x = display.screenOriginX
     end)()
   )
 end
@@ -155,33 +156,84 @@ function renderConfirmButton()
   )
 end
 
+-- getPitchByID retrives a pitch entity stored in the current pitcher entity
+function getPitchByID(pitchID)
+  local pitcher = batterManager:getDataStore():getPitcher()
+  local pitch = pitcher:getPitches()[pitchID]
+  if (pitch == nil) then
+    error("invalid pitch selected: " .. pitchID)
+  end
+  return pitch
+end
+
 function renderPitchGuessSelection()
-  local pitches = batterManager:getDataStore():getPitcher():getPitches()
-  for i, pitch in ipairs(pitches) do
+  local pitchCardsMap = batterManager:getDataStore():getInPlayPitcherActionCardsMap()
+  local index = 1
+  for pitchID, actionCardID in pairs(pitchCardsMap) do
+    local pitcherActionCards = batterManager:getDataStore():getPitcherActionCards()
+    if (pitcherActionCards == nil or #pitcherActionCards < 1) then
+      error("invalid pitcher action cards")
+      return
+    end
+
+    -- Get pitch information
+    local pitch = getPitchByID(pitchID)
+    -- Get action card information
+    local pitcherActionCard = pitcherActionCards[pitchID]
+
     viewManager:addComponent(
       SCENE_NAME,
-      "BUTTON_GUESS_PITCH_" .. pitch.id,
+      "BUTTON_GUESS_PITCH_CARD_" .. pitch:getID(),
+      (function()
+        local guessPitchButton =
+          widget.newButton {
+          width = 50,
+          height = 70,
+          label = pitch:getID(),
+          defaultFile = assetUtil.resolveAssetPath(pitcherActionCard:getPitchingAction():getPictureURL()),
+          -- fillColor = {default = {1, 0.2, 0.5, 0.7}, over = {1, 0.2, 0.5, 1}},
+          onRelease = function()
+            onGuessPitch(pitch:getID())
+          end
+        }
+        guessPitchButton.anchorX = 1
+        guessPitchButton.anchorY = 0
+        guessPitchButton.x = display.contentWidth - 150
+        guessPitchButton.y = 10 + (index - 1) * 85
+
+        -- Apply highlight to the card if selected
+        if (guessedPitch == pitch:getID()) then
+          guessPitchButton:setFillColor(1, 0.75, 0, 1)
+        end
+        return guessPitchButton
+      end)()
+    )
+
+    viewManager:addComponent(
+      SCENE_NAME,
+      "BUTTON_GUESS_PITCH_ICON_" .. pitch:getID(),
       (function()
         local guessZoneButton =
           widget.newButton {
-          label = pitch.abbreviation,
+          label = pitch:getAbbreviation(),
           labelColor = {default = {1.0}, over = {0.5}},
-          width = 50,
-          height = 50,
+          width = 30,
+          height = 30,
           shape = "roundedRect",
           cornerRadius = "50",
           fillColor = {default = {1, 0.2, 0.5, 0.7}, over = {1, 0.2, 0.5, 1}},
           onRelease = function()
-            onGuessPitch(pitch.id)
+            onGuessPitch(pitch:getID())
           end
         }
         guessZoneButton.anchorX = 1
         guessZoneButton.anchorY = 0
-        guessZoneButton.x = display.contentWidth - 150
-        guessZoneButton.y = 10 + (i - 1) * 60
+        guessZoneButton.x = display.contentWidth - 140
+        guessZoneButton.y = 60 + (index - 1) * 85
         return guessZoneButton
       end)()
     )
+    index = index + 1
   end
 end
 
