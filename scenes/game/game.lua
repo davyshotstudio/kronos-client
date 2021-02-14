@@ -78,8 +78,6 @@ end
 
 function startGame()
   local testResponse = {
-    state = "HELLO",
-    pitchResultState = "PENIS",
     balls = 1,
     strikes = 2,
     inning = 1,
