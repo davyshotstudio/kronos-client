@@ -73,6 +73,8 @@ function scene:hide(event)
 
   if (phase == "did") then
     viewManager:removeComponents(SCENE_NAME)
+    guessedPitch = 0
+    guessedZone = 0
   end
 end
 
@@ -263,16 +265,21 @@ end
 function renderZoneGuessSelection()
   local group = display.newGroup()
   sceneGroup:insert(group)
+  local cardIDs = batterManager:getDataStore():getInPlayBatterActionCardsMap()
 
   -- Create resolve button to resolve pitch
   for i = 1, 4 do
     local cardText = i
-
+    local cardID = cardIDs[i]
+    local card = batterManager:getDataStore():getBatterActionCards()[cardID]
+    if (card == nil) then
+      error("missing card for zone guess selection")
+    end
     local zoneButtonSettings = {
       width = 67,
       height = 91,
       font = "asul.ttf",
-      defaultFile = assetUtil.resolveAssetPath("action_card_sample.png"),
+      defaultFile = assetUtil.resolveAssetPath(card:getBattingAction():getPictureURL()),
       label = cardText,
       labelColor = {default = {1.0}, over = {0.5}},
       onRelease = function(event)
