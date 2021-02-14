@@ -225,6 +225,13 @@ local inPlayPitcherActionCardsMap = {
   [4] = 5
 }
 
+local inPlayBatterActionCardsMap = {
+  [1] = 7,
+  [2] = 5,
+  [3] = 1,
+  [4] = 4
+}
+
 local awayTeam =
   team:new(
   {
@@ -247,6 +254,7 @@ return {
   batterActionCards = batterActionCards,
   pitcherActionCards = pitcherActionCards,
   inPlayPitcherActionCardsMap = inPlayPitcherActionCardsMap,
+  inPlayBatterActionCardsMap = inPlayBatterActionCardsMap,
   awayTeam = awayTeam,
   homeTeam = homeTeam
 }

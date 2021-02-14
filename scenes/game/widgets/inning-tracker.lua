@@ -38,7 +38,7 @@ local function inningTracker(parentSceneGroup, sceneName)
 
   -- Offset for the balls/strikes/outs from the inning label
   local xBodyOffset = 50
-  local defaultFontSize = 12
+  local defaultFontSize = 10
 
   viewManager:addComponent(
     sceneName,
@@ -62,7 +62,7 @@ local function inningTracker(parentSceneGroup, sceneName)
       text.anchorX = 0
       text.anchorY = 0
       text.x = xBodyOffset
-      text.y = 16
+      text.y = 18
       text:setFillColor(0)
       return text
     end)()
@@ -76,7 +76,7 @@ local function inningTracker(parentSceneGroup, sceneName)
       text.anchorX = 0
       text.anchorY = 0
       text.x = xBodyOffset
-      text.y = 30
+      text.y = 34
       text:setFillColor(0)
       return text
     end)()

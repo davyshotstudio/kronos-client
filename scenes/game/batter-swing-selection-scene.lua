@@ -144,7 +144,7 @@ function renderBackground()
   -- Background
   viewManager:addComponent(
     SCENE_NAME,
-    "TEXT_BUILD_STRIKE_ZONE",
+    "BACKGROUND_FIELD",
     (function()
       local background =
         display.newImageRect(
@@ -238,6 +238,7 @@ function renderPitchGuessSelection()
           widget.newButton {
           label = pitch:getAbbreviation(),
           labelColor = {default = {1.0}, over = {0.5}},
+          fontSize = 12,
           width = 30,
           height = 30,
           shape = "roundedRect",
@@ -367,9 +368,7 @@ function renderStatus()
         native.systemFont,
         24
       )
-      resultText.anchorX = 0
-      resultText.anchorY = 0
-      resultText.x = 20
+      resultText.x = display.contentCenterX
       resultText.y = 20
       resultText:setFillColor(1, 1, 1)
       return resultText

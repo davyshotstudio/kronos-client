@@ -20,7 +20,8 @@ function DataStore:new(options)
   local inning = options.inning or 0
   local pitcher = options.pitcher or mockData.pitchingStaff[1]
   local batter = options.batter or mockData.battingLineup[1]
-  local pitcherSelectedZone = options.pitcherSelectedZone or 0
+  local pitcherSelectedZone = options.pitcherSelectedZone or 1
+  local pitcherSelectedPitch = options.pitcherSelectedPitch or 1
   local batterGuessedZone = options.batterGuessedZone or 0
   local batterGuessedPitch = options.batterGuessedPitch or 0
   local lastPitcherRoll = -1
@@ -49,6 +50,7 @@ function DataStore:new(options)
     pitcher = pitcher,
     batter = batter,
     pitcherSelectedZone = pitcherSelectedZone,
+    pitcherSelectedPitch = pitcherSelectedPitch,
     batterGuessedZone = batterGuessedZone,
     batterGuessedPitch = batterGuessedPitch,
     lastPitcherRoll = lastPitcherRoll,
@@ -100,9 +102,9 @@ function DataStore:updateState(action, params)
         self.strikes = 0
       end
 
-      -- Reset batter/pitcher selected zones
-      self.pitcherSelectedZone = -1
-      self.batterGuessedZone = -1
+    -- Reset batter/pitcher selected zones
+    -- self.pitcherSelectedZone = -1
+    -- self.batterGuessedZone = -1
     end
   elseif (self.state == constants.STATE_PLAYERS_PITCH_RESOLVED) then
     if (action == constants.ACTION_RESOLVER_NEXT_PITCH) then
@@ -211,6 +213,38 @@ end
 
 function DataStore:setPitcher(pitcher)
   self.pitcher = pitcher
+end
+
+function DataStore:getPitcherSelectedPitch()
+  return self.pitcherSelectedPitch
+end
+
+function DataStore:setPitcherSelectedPitch(pitcherSelectedPitch)
+  self.pitcherSelectedPitch = pitcherSelectedPitch
+end
+
+function DataStore:getPitcherSelectedZone()
+  return self.pitcherSelectedZone
+end
+
+function DataStore:setPitcherSelectedZone(pitcherSelectedZone)
+  self.pitcherSelectedZone = pitcherSelectedZone
+end
+
+function DataStore:getBatterGuessedPitch()
+  return self.batterGuessedPitch
+end
+
+function DataStore:setBatterSelectedPitch(batterGuessedPitch)
+  self.batterGuessedPitch = batterGuessedPitch
+end
+
+function DataStore:getBatterGuessedZone()
+  return self.batterGuessedZone
+end
+
+function DataStore:setBatterSelectedZone(batterGuessedZone)
+  self.batterGuessedZone = batterGuessedZone
 end
 
 function DataStore:getLastRolls()

@@ -47,6 +47,8 @@ end
 
 -- For websocket debugging purposes
 local message = display.newText("debug messages here", 120, 320, nil, 6)
+message.anchorY = 1
+message.y = display.contentHeight
 
 -- Helper function for listener initialization logic
 function SocketManager:_socketListener(event)
@@ -109,7 +111,11 @@ function SocketManager:setData(fieldKey, value)
     awayScore = ds.setAwayScore,
     homeScore = ds.setHomeScore,
     awayTeam = ds.setAwayTeam,
-    homeTeam = ds.setHomeTeam
+    homeTeam = ds.setHomeTeam,
+    batterSelectedPitch = ds.setBatterSelectedPitch,
+    batterSelectedZone = ds.setBatterSelectedZone,
+    pitcherSelectedPitch = ds.setPitcherSelectedPitch,
+    pitcherSelectedZone = ds.setPitcherSelectedZone
   }
 
   -- Update datastore for the provided key
