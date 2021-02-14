@@ -1,5 +1,6 @@
 -- Scoreboard is a widget that displays the current score between two teams
 local composer = require("composer")
+local config = require("scenes.game.utilities.config")
 
 local function inningTracker(parentSceneGroup, sceneName)
   -- Retrieve DI instances of the managers
@@ -19,9 +20,9 @@ local function inningTracker(parentSceneGroup, sceneName)
   local ballsCount, strikesCount = batterManager:getDataStore():getCount()
   local inningCount = batterManager:getDataStore():getInning()
 
-  local outs = "Outs: " .. outsCount or ""
-  local balls = "Balls: " .. ballsCount or ""
-  local strikes = "Strikes: " .. strikesCount or ""
+  local outs = "Outs: "
+  local balls = "Balls: "
+  local strikes = "Strikes: "
   local inning = inningCount or ""
 
   viewManager:addComponent(
@@ -54,6 +55,27 @@ local function inningTracker(parentSceneGroup, sceneName)
     end)()
   )
 
+  for i = 1, config.MAX_OUTS do
+    viewManager:addComponent(
+      sceneName,
+      "OUTS_MARKER_" .. i,
+      (function()
+        local outsView = display.newRoundedRect(sceneGroup, 0, 0, 8, 8, 4)
+        outsView.anchorX = 0
+        outsView.anchorY = 0
+        outsView.x = xBodyOffset + 22 + (15 * i)
+        outsView.y = 2 + 2
+        outsView:setFillColor(0, 0, 1)
+        outsView:setStrokeColor(0.25)
+        outsView.strokeWidth = 1
+        if (i > outsCount) then
+          outsView:setFillColor(1)
+        end
+        return outsView
+      end)()
+    )
+  end
+
   viewManager:addComponent(
     sceneName,
     "TEXT_BALLS",
@@ -68,6 +90,27 @@ local function inningTracker(parentSceneGroup, sceneName)
     end)()
   )
 
+  for i = 1, config.MAX_BALLS do
+    viewManager:addComponent(
+      sceneName,
+      "BALLS_MARKER_" .. i,
+      (function()
+        local ballsView = display.newRoundedRect(sceneGroup, 0, 0, 8, 8, 4)
+        ballsView.anchorX = 0
+        ballsView.anchorY = 0
+        ballsView.x = xBodyOffset + 22 + (15 * i)
+        ballsView.y = 18 + 2
+        ballsView:setFillColor(0, 1, 0)
+        ballsView:setStrokeColor(0.25)
+        ballsView.strokeWidth = 1
+        if (i > ballsCount) then
+          ballsView:setFillColor(1)
+        end
+        return ballsView
+      end)()
+    )
+  end
+
   viewManager:addComponent(
     sceneName,
     "TEXT_STRIKES",
@@ -81,6 +124,27 @@ local function inningTracker(parentSceneGroup, sceneName)
       return text
     end)()
   )
+
+  for i = 1, config.MAX_STRIKES do
+    viewManager:addComponent(
+      sceneName,
+      "STRIKES_MARKER_" .. i,
+      (function()
+        local strikesView = display.newRoundedRect(sceneGroup, 0, 0, 8, 8, 4)
+        strikesView.anchorX = 0
+        strikesView.anchorY = 0
+        strikesView.x = xBodyOffset + 22 + (15 * i)
+        strikesView.y = 34 + 2
+        strikesView:setFillColor(1, 0, 0)
+        strikesView:setStrokeColor(0.25)
+        strikesView.strokeWidth = 1
+        if (i > strikesCount) then
+          strikesView:setFillColor(1)
+        end
+        return strikesView
+      end)()
+    )
+  end
 
   viewManager:addComponent(
     sceneName,
