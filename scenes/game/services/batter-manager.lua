@@ -31,6 +31,7 @@ function BatterManager:new(options)
   return batterManager
 end
 
+-- Update the game state for a batter flow
 function BatterManager:updateGameState(action, params)
   -- Grab the correct function to handle the incoming action
   -- based on the current state
