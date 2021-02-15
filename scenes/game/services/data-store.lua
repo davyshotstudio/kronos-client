@@ -5,6 +5,7 @@
 --------------------------------------------------------------------
 local constants = require("scenes.game.utilities.constants")
 local config = require("scenes.game.utilities.config")
+local json = require("json")
 -- TODO: Remove when no more mocks are needed
 local mockData = require("scenes.game.utilities.fixtures.mock-data")
 
@@ -12,7 +13,7 @@ local DataStore = {}
 
 -- Instantiate DataStore (constructor)
 function DataStore:new(options)
-  local state = constants.STATE_PLAYERS_PITCH_PENDING
+  local state = constants.STATE_BATTER_START
   local pitchResultState = constants.NONE
   local balls = options.balls or 0
   local strikes = options.strikes or 0
@@ -40,6 +41,8 @@ function DataStore:new(options)
   local awayTeam = options.awayTeam or mockData.awayTeam
   local homeTeam = options.homeTeam or mockData.homeTeam
 
+  local listeners = {}
+
   local dataStore = {
     state = state,
     pitchResultState = pitchResultState,
@@ -63,7 +66,8 @@ function DataStore:new(options)
     awayScore = awayScore,
     homeScore = homeScore,
     awayTeam = awayTeam,
-    homeTeam = homeTeam
+    homeTeam = homeTeam,
+    listeners = listeners
   }
 
   setmetatable(dataStore, self)
@@ -72,119 +76,9 @@ function DataStore:new(options)
   return dataStore
 end
 
--- Listeners to server push events
-function listeners()
-  -- Map datafields to the proper field
-end
-
-function DataStore:updateState(action, params)
-  if (self.state == constants.STATE_PLAYERS_PITCH_PENDING) then
-    if (action == constants.ACTION_RESOLVER_BATTER_SELECT_ZONE) then
-      self.batterGuessedZone = params.batterGuessedZone
-    end
-
-    if (action == constants.ACTION_RESOLVER_PITCHER_SELECT_ZONE) then
-      self.pitcherSelectedZone = params.pitcherSelectedZone
-    end
-
-    if (self.batterGuessedZone > -1 and self.pitcherSelectedZone > -1) then
-      -- Resolve the pitch
-      local pitchResultState, pitcherRoll, batterRoll = self:resolvePitch(self.pitcher, self.batter)
-      self.pitchResultState = pitchResultState
-      self.state = constants.STATE_PLAYERS_PITCH_RESOLVED
-      -- If the pitch is a terminal pitch (results in a hit or out or walk), move state to at bat finished
-      if
-        (pitchResultState ~= constants.BALL and pitchResultState ~= constants.STRIKE and
-          pitchResultState ~= constants.FOUL)
-       then
-        self.state = constants.STATE_PLAYERS_AT_BAT_RESOLVED
-        self.balls = 0
-        self.strikes = 0
-      end
-
-    -- Reset batter/pitcher selected zones
-    -- self.pitcherSelectedZone = -1
-    -- self.batterGuessedZone = -1
-    end
-  elseif (self.state == constants.STATE_PLAYERS_PITCH_RESOLVED) then
-    if (action == constants.ACTION_RESOLVER_NEXT_PITCH) then
-      self.state = constants.STATE_PLAYERS_PITCH_PENDING
-    end
-  elseif (self.state == constants.STATE_PLAYERS_AT_BAT_RESOLVED) then
-    -- If both pitcher and batter player are ready for the next at bat,
-    -- move to the next player
-    if (action == constants.ACTION_RESOLVER_NEXT_BATTER) then
-      self.state = constants.STATE_PLAYERS_PITCH_PENDING
-    -- TODO (wilbert): reset at bat
-    end
-  end
-
-  return self.state
-end
-
--- Roll a random result between the player's floor and ceiling
--- TODO: add additional logic for determining the roll
-local function roll(player)
-  return math.random(player:getSkill():getFloor(), player:getSkill():getCeiling())
-end
-
--- Run the matchup for a single pitch
-function DataStore:resolvePitch(pitcher, batter)
-  local pitcherRoll = roll(pitcher)
-  local batterRoll = roll(batter)
-
-  local pitchResultState = self:calculatePitchResultState(pitcherRoll, batterRoll)
-  if (pitchResultState == constants.BALL) then
-    self.balls = self.balls + 1
-    if (self.balls >= config.MAX_BALLS) then
-      pitchResultState = constants.WALK
-    end
-  end
-  if (pitchResultState == constants.STRIKE) then
-    self.strikes = self.strikes + 1
-    if (self.strikes >= config.MAX_STRIKES) then
-      pitchResultState = constants.STRIKEOUT
-    end
-  end
-  self.lastPitcherRoll = pitcherRoll
-  self.lastBatterRoll = batterRoll
-  return pitchResultState, pitcherRoll, batterRoll
-end
-
--- Update state machine for the at bat
-function DataStore:calculatePitchResultState(pitcherRoll, batterRoll)
-  local result = batterRoll - pitcherRoll
-
-  -- If zone is 0, that means that the batter isn't swinging
-  -- Check the potential for a ball
-  if (self.batterGuessedZone == 0) then
-    if (batterRoll * 1.2 > pitcherRoll) then
-      state = constants.BALL
-    else
-      state = constants.STRIKE
-    end
-    return state
-  end
-
-  -- Positive value means batter wins,
-  -- negative value means pitcher wins,
-  -- tie means foul ball
-  if (result == 0) then
-    state = constants.FOUL
-  elseif (result > config.TRIPLE_CUTOFF) then
-    state = constants.HOME_RUN
-  elseif (result > config.DOUBLE_CUTOFF) then
-    state = constants.TRIPLE
-  elseif (result > config.SINGLE_CUTOFF) then
-    state = constants.DOUBLE
-  elseif (result > 0) then
-    state = constants.SINGLE
-  elseif (result < 0) then
-    state = constants.OUT
-  end
-
-  -- Update state machine and return state
-  return state
+-- -- Listeners to server push events
+function DataStore:addStateListener(listenerFunction)
+  table.insert(self.listeners, listenerFunction)
 end
 
 -- ---------------------------------------------------------
@@ -195,8 +89,15 @@ function DataStore:getState()
   return self.state
 end
 
-function DataStore:setState(state)
-  self.state = state
+function DataStore:setState(nextState)
+  local currentState = self.state
+
+  -- Execute the listeners functions to any state updates
+  for i, listener in ipairs(self.listeners) do
+    listener(self, currentState, nextState)
+  end
+
+  self.state = nextState
 end
 
 function DataStore:getBatter()
@@ -235,7 +136,7 @@ function DataStore:getBatterGuessedPitch()
   return self.batterGuessedPitch
 end
 
-function DataStore:setBatterSelectedPitch(batterGuessedPitch)
+function DataStore:getBatterGuessedPitch(batterGuessedPitch)
   self.batterGuessedPitch = batterGuessedPitch
 end
 
@@ -243,7 +144,7 @@ function DataStore:getBatterGuessedZone()
   return self.batterGuessedZone
 end
 
-function DataStore:setBatterSelectedZone(batterGuessedZone)
+function DataStore:setBatterGuessedZone(batterGuessedZone)
   self.batterGuessedZone = batterGuessedZone
 end
 
@@ -308,6 +209,7 @@ function DataStore:getInPlayBatterActionCardsMap()
 end
 
 function DataStore:setInPlayBatterActionCardsMap(inPlayBatterActionCardsMap)
+  print("updated json:" .. json.encode(inPlayBatterActionCardsMap))
   self.inPlayBatterActionCardsMap = inPlayBatterActionCardsMap
 end
 

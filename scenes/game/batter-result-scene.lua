@@ -145,54 +145,52 @@ function renderBackground()
 end
 
 function renderNextButton()
-  if (batterManager:getState() == constants.STATE_BATTER_RESULT) then
-    if (batterManager:getIsNextAtBat()) then
-      -- Next batter button
-      viewManager:addComponent(
-        SCENE_NAME,
-        "NEXT_BATTER",
-        (function()
-          local nextBatterButton =
-            widget.newButton {
-            label = "Next batter",
-            labelColor = {default = {1.0}, over = {0.5}},
-            shape = "roundedRect",
-            fillColor = {default = {0, 0.5, 1, 0.7}, over = {0, 0.5, 1, 1}},
-            width = 100,
-            height = 40,
-            onRelease = onNextBatter
-          }
-          nextBatterButton.anchorY = 1
-          nextBatterButton.x = display.contentCenterX
-          nextBatterButton.y = display.contentHeight - 30
-          sceneGroup:insert(nextBatterButton)
-          return nextBatterButton
-        end)()
-      )
-    else
-      -- Next pitch button
-      viewManager:addComponent(
-        SCENE_NAME,
-        "NEXT_PITCH",
-        (function()
-          local nextPitchButton =
-            widget.newButton {
-            label = "Next pitch",
-            labelColor = {default = {1.0}, over = {0.5}},
-            shape = "roundedRect",
-            fillColor = {default = {0, 0.5, 1, 0.7}, over = {0, 0.5, 1, 1}},
-            width = 100,
-            height = 40,
-            onRelease = onNextPitch
-          }
-          nextPitchButton.anchorY = 1
-          nextPitchButton.x = display.contentCenterX
-          nextPitchButton.y = display.contentHeight - 30
-          sceneGroup:insert(nextPitchButton)
-          return nextPitchButton
-        end)()
-      )
-    end
+  if (batterManager:getIsNextAtBat()) then
+    -- Next batter button
+    viewManager:addComponent(
+      SCENE_NAME,
+      "NEXT_BATTER",
+      (function()
+        local nextBatterButton =
+          widget.newButton {
+          label = "Next batter",
+          labelColor = {default = {1.0}, over = {0.5}},
+          shape = "roundedRect",
+          fillColor = {default = {0, 0.5, 1, 0.7}, over = {0, 0.5, 1, 1}},
+          width = 100,
+          height = 40,
+          onRelease = onNextBatter
+        }
+        nextBatterButton.anchorY = 1
+        nextBatterButton.x = display.contentCenterX
+        nextBatterButton.y = display.contentHeight - 30
+        sceneGroup:insert(nextBatterButton)
+        return nextBatterButton
+      end)()
+    )
+  else
+    -- Next pitch button
+    viewManager:addComponent(
+      SCENE_NAME,
+      "NEXT_PITCH",
+      (function()
+        local nextPitchButton =
+          widget.newButton {
+          label = "Next pitch",
+          labelColor = {default = {1.0}, over = {0.5}},
+          shape = "roundedRect",
+          fillColor = {default = {0, 0.5, 1, 0.7}, over = {0, 0.5, 1, 1}},
+          width = 100,
+          height = 40,
+          onRelease = onNextPitch
+        }
+        nextPitchButton.anchorY = 1
+        nextPitchButton.x = display.contentCenterX
+        nextPitchButton.y = display.contentHeight - 30
+        sceneGroup:insert(nextPitchButton)
+        return nextPitchButton
+      end)()
+    )
   end
 end
 
@@ -268,7 +266,14 @@ function renderZoneActionCard()
     error("invalid zone card selected by the pitcher")
   end
 
-  local card = batterManager:getDataStore():getBatterActionCards()[actionCardID]
+  -- Find the expanded information on the card associated with the cardID
+  local card
+  for _, actionCard in ipairs(batterManager:getDataStore():getBatterActionCards()) do
+    if (actionCardID == actionCard:getID()) then
+      card = actionCard
+      break
+    end
+  end
   if (card == nil) then
     error("action card not available in the batter's deck")
   end

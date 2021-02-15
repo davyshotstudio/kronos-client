@@ -92,9 +92,7 @@ scene:addEventListener("destroy", scene)
 
 -- Action for when the player confirms and locks in a batter athlete card
 function onConfirmBatterCard()
-  batterManager:getDataStore():setBatter(selectedBatterCard)
-  print(batterManager:getDataStore():getBatter():getName())
-  composer.gotoScene("scenes.game.batter-strike-zone-creation-scene")
+  batterManager:updateGameState(constants.ACTION_BATTER_SELECT_ATHLETE, {selectedBatterCard = selectedBatterCard})
 end
 
 -- If batter card is selected, highlight and set the tentative

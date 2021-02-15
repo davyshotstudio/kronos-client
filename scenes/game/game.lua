@@ -9,12 +9,15 @@ local SolarWebSockets = require "plugin.solarwebsockets"
 local json = require("json")
 
 local assetUtil = require("scenes.game.utilities.asset-util")
+local constants = require("scenes.game.utilities.constants")
 
 -- DI modules
 local dataStoreModule = require("scenes.game.services.data-store")
 local batterManagerModule = require("scenes.game.services.batter-manager")
 local viewManagerModule = require("scenes.game.services.view-manager")
 local socketManagerModule = require("scenes.game.services.socket-manager")
+local sceneRouterModule = require("scenes.game.services.router")
+local mockServerModule = require("scenes.game.services.mock-server")
 
 -- Initialize scene variables
 local scene = composer.newScene()
@@ -34,7 +37,6 @@ local clearMatchup
 local sceneGroup
 local viewManager
 local batterManager
-local socketManager
 
 -- create() is executed on first load and runs only once (initialize values here)
 function scene:create(event)
@@ -46,12 +48,18 @@ function scene:create(event)
 
   -- DataStore is a local cache store containing responses from the server
   local dataStore = dataStoreModule:new({balls = 0, strikes = 0})
-  batterManager = batterManagerModule:new({dataStore = dataStore})
+
+  local sceneRouter = sceneRouterModule:new({dataStore = dataStore})
+  sceneRouter:registerStateListener()
 
   -- SocketManager manages the socket lifecycle and provides listeners to
   -- for bidirectional client/server requests and responses
-  socketManager = socketManagerModule:new({dataStore = dataStore})
+  local socketManager = socketManagerModule:new({dataStore = dataStore})
   socketManager:connect("wss://echo.websocket.org")
+
+  local mockServer = mockServerModule:new({dataStore = dataStore, socketManager = socketManager})
+
+  batterManager = batterManagerModule:new({dataStore = dataStore, mockServer = mockServer})
 
   -- Register the service managers into the global composer for easy access
   composer.setVariable("viewManager", viewManager)
@@ -77,15 +85,7 @@ end
 -- -----------------------------------------------------------------------------------
 
 function startGame()
-  local testResponse = {
-    balls = 1,
-    strikes = 2,
-    inning = 1,
-    outs = 2
-  }
-  SolarWebSockets.sendServer(json.encode({statusCode = 200, type = "game_update", body = testResponse}))
-
-  composer.gotoScene("scenes.game.batter-athlete-selection-scene")
+  batterManager:updateGameState(constants.ACTION_BATTER_START)
 end
 
 function scene:hide(event)

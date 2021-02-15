@@ -184,7 +184,16 @@ function onCurrentBatterZoom(event)
 end
 
 function onConfirmStrikeZone()
-  composer.gotoScene("scenes.game.batter-swing-selection-scene")
+  -- Create mapping that has zone as key and cardID as the value
+  local inPlayBatterActionCardsMap = {}
+  for zone, card in pairs(strikeZone) do
+    inPlayBatterActionCardsMap[zone] = card:getID()
+  end
+
+  batterManager:updateGameState(
+    constants.ACTION_BATTER_CREATE_ZONE,
+    {inPlayBatterActionCardsMap = inPlayBatterActionCardsMap}
+  )
 end
 
 -- -----------------------------------------------------------------------------------
