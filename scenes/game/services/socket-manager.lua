@@ -41,8 +41,11 @@ end
 
 -- Send a message up to the server
 function SocketManager:sendMessage(message)
-  print("sending message: " .. message)
-  SolarWebSockets.sendServer(message)
+  print("sending message: " .. json.encode(message))
+  if (message == nil or message == {}) then
+    error("cannot send empty message")
+  end
+  SolarWebSockets.sendServer(json.encode(message))
 end
 
 -- For websocket debugging purposes

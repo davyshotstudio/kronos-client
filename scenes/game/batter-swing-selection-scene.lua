@@ -126,16 +126,12 @@ function onGuessPitch(event, pitchID)
 end
 
 function onConfirm()
-  local newState =
-    batterManager:updateGameState(
+  batterManager:updateGameState(
     constants.ACTION_BATTER_SELECT_ZONE,
     {guessedZone = guessedZone, guessedPitch = guessedPitch}
   )
   -- In multiplayer, this should be triggered automatically when both players have finished their selections
   newState = batterManager:updateGameState(constants.ACTION_BATTER_RESOLVE_PITCH)
-
-  -- Execute the pitch
-  composer.gotoScene("scenes.game.batter-result-scene")
 end
 
 -- -----------------------------------------------------------------------------------
@@ -271,10 +267,19 @@ function renderZoneGuessSelection()
   for i = 1, 4 do
     local cardText = i
     local cardID = cardIDs[i]
-    local card = batterManager:getDataStore():getBatterActionCards()[cardID]
+
+    -- Find the expanded information on the card associated with the cardID
+    local card
+    for _, actionCard in ipairs(batterManager:getDataStore():getBatterActionCards()) do
+      if (cardID == actionCard:getID()) then
+        card = actionCard
+        break
+      end
+    end
     if (card == nil) then
       error("missing card for zone guess selection")
     end
+
     local zoneButtonSettings = {
       width = 67,
       height = 91,
