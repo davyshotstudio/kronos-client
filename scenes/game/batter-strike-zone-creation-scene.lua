@@ -384,7 +384,6 @@ end
 
 function renderCurrentBatter()
   local batter = batterManager:getDataStore():getBatter()
-  local json = require("json")
   local currentBatterView =
     viewManager:addComponent(
     SCENE_NAME,

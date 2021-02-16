@@ -6,7 +6,6 @@
 local composer = require("composer")
 local widget = require("widget")
 local SolarWebSockets = require "plugin.solarwebsockets"
-local json = require("json")
 
 local assetUtil = require("scenes.game.utilities.asset-util")
 local constants = require("scenes.game.utilities.constants")

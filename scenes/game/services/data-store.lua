@@ -3,8 +3,6 @@
 -- clients source of truth, all data here will be synced with the
 -- server and cached in this file
 --------------------------------------------------------------------
-local json = require("json")
-
 local constants = require("scenes.game.utilities.constants")
 local config = require("scenes.game.utilities.config")
 -- TODO: Remove when no more mocks are needed
