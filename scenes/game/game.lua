@@ -6,7 +6,6 @@
 local composer = require("composer")
 local widget = require("widget")
 local SolarWebSockets = require "plugin.solarwebsockets"
-local json = require("json")
 
 local assetUtil = require("scenes.game.utilities.asset-util")
 local constants = require("scenes.game.utilities.constants")
@@ -59,7 +58,9 @@ function scene:create(event)
 
   local mockServer = mockServerModule:new({dataStore = dataStore, socketManager = socketManager})
 
-  batterManager = batterManagerModule:new({dataStore = dataStore, mockServer = mockServer})
+  batterManager =
+    batterManagerModule:new({dataStore = dataStore, mockServer = mockServer, socketManager = socketManager})
+  batterManager:registerActionListener()
 
   -- Register the service managers into the global composer for easy access
   composer.setVariable("viewManager", viewManager)

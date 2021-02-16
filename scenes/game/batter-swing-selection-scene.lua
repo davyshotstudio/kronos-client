@@ -130,8 +130,6 @@ function onConfirm()
     constants.ACTION_BATTER_SELECT_ZONE,
     {guessedZone = guessedZone, guessedPitch = guessedPitch}
   )
-  -- In multiplayer, this should be triggered automatically when both players have finished their selections
-  newState = batterManager:updateGameState(constants.ACTION_BATTER_RESOLVE_PITCH)
 end
 
 -- -----------------------------------------------------------------------------------
