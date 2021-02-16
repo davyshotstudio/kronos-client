@@ -78,7 +78,7 @@ end
 function scene:show(event)
   local phase = event.phase
 
-  if (phase == "will") then
+  if (phase == "did") then
     -- Header text
     viewManager:addComponent(
       SCENE_NAME,
@@ -384,6 +384,7 @@ end
 
 function renderCurrentBatter()
   local batter = batterManager:getDataStore():getBatter()
+  local json = require("json")
   local currentBatterView =
     viewManager:addComponent(
     SCENE_NAME,

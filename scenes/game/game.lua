@@ -59,7 +59,9 @@ function scene:create(event)
 
   local mockServer = mockServerModule:new({dataStore = dataStore, socketManager = socketManager})
 
-  batterManager = batterManagerModule:new({dataStore = dataStore, mockServer = mockServer})
+  batterManager =
+    batterManagerModule:new({dataStore = dataStore, mockServer = mockServer, socketManager = socketManager})
+  batterManager:registerActionListener()
 
   -- Register the service managers into the global composer for easy access
   composer.setVariable("viewManager", viewManager)

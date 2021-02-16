@@ -3,11 +3,16 @@
 -- clients source of truth, all data here will be synced with the
 -- server and cached in this file
 --------------------------------------------------------------------
+local json = require("json")
+
 local constants = require("scenes.game.utilities.constants")
 local config = require("scenes.game.utilities.config")
-local json = require("json")
 -- TODO: Remove when no more mocks are needed
 local mockData = require("scenes.game.utilities.fixtures.mock-data")
+
+local athleteCard = require("scenes.game.entities.athlete-card")
+local skill = require("scenes.game.entities.skill")
+local pitch = require("scenes.game.entities.pitch")
 
 local DataStore = {}
 
@@ -105,7 +110,23 @@ function DataStore:getBatter()
 end
 
 function DataStore:setBatter(batter)
-  self.batter = batter
+  local mappedBatter =
+    athleteCard:new(
+    {
+      id = batter.id,
+      name = batter.name,
+      pictureURL = batter.pictureURL,
+      positions = batter.positions,
+      skill = skill:new(
+        {
+          floor = batter.skill.floor,
+          ceiling = batter.skill.ceiling
+        }
+      )
+    }
+  )
+
+  self.batter = mappedBatter
 end
 
 function DataStore:getPitcher()
@@ -113,7 +134,33 @@ function DataStore:getPitcher()
 end
 
 function DataStore:setPitcher(pitcher)
-  self.pitcher = pitcher
+  local mappedPitcher =
+    athleteCard:new(
+    {
+      id = pitcher.id,
+      name = pitcher.name,
+      pictureURL = pitcher.pictureURL,
+      positions = pitcher.positions,
+      skill = skill:new(
+        {
+          floor = pitcher.skill.floor,
+          ceiling = pitcher.skill.ceiling
+        }
+      ),
+      -- TODO (wilbert): map these fields instead of hardcoding them
+      pitches = {
+        [1] = pitch:new({id = 1, name = "FASTBALL", abbreviation = "FB"}),
+        [2] = pitch:new({id = 2, name = "CHANGEUP", abbreviation = "CH"}),
+        [3] = pitch:new({id = 3, name = "CURVEBALL", abbreviation = "CB"}),
+        [4] = pitch:new({id = 4, name = "SLIDER", abbreviation = "SL"}),
+        [5] = pitch:new({id = 5, name = "KNUCKLEBALL", abbreviation = "KN"}),
+        [6] = pitch:new({id = 6, name = "SCREWBALL", abbreviation = "SB"}),
+        [7] = pitch:new({id = 7, name = "SPLITTER", abbreviation = "SP"})
+      }
+    }
+  )
+
+  self.pitcher = mappedPitcher
 end
 
 function DataStore:getPitcherSelectedPitch()
@@ -209,7 +256,6 @@ function DataStore:getInPlayBatterActionCardsMap()
 end
 
 function DataStore:setInPlayBatterActionCardsMap(inPlayBatterActionCardsMap)
-  print("updated json:" .. json.encode(inPlayBatterActionCardsMap))
   self.inPlayBatterActionCardsMap = inPlayBatterActionCardsMap
 end
 

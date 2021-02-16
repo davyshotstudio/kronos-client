@@ -11,9 +11,11 @@ local SocketManager = {}
 -- Instantiate SocketManager (constructor)
 function SocketManager:new(options)
   local dataStore = options.dataStore
+  local actionListeners = {}
 
   local socketManager = {
-    dataStore = dataStore
+    dataStore = dataStore,
+    actionListeners = actionListeners
   }
 
   setmetatable(socketManager, self)
@@ -53,12 +55,16 @@ local message = display.newText("debug messages here", 120, 320, nil, 6)
 message.anchorY = 1
 message.y = display.contentHeight
 
+function SocketManager:addActionListener(actionListener)
+  table.insert(self.actionListeners, actionListener)
+end
+
 -- Helper function for listener initialization logic
 function SocketManager:_socketListener(event)
   message.text = json.encode(event)
-  if event.isClient then
+  if (event.isClient) then
     -- Connection events
-    if event.name == "join" then
+    if (event.name == "join") then
       print("socket connection established")
 
       -- Reload the current scene when connected
@@ -71,18 +77,26 @@ function SocketManager:_socketListener(event)
       )
     end
 
-    if event.name == "message" then
+    if (event.name == "message") then
       print("got message from server")
       message = json.decode(event.message)
-      -- Listen to updates in the game state
-      if message.type == "game_update" then
+      if (message.type == "game_update") then
+        -- Listen to updates in the game state
         for key, value in pairs(message.body) do
           self:setData(key, value)
+        end
+
+        -- Listen to updates to the event action, if available.
+        -- The event action will be used to trigger state changes in the client
+        if (message.eventAction ~= nil and message.eventAction ~= "") then
+          for i, actionListener in ipairs(self.actionListeners) do
+            actionListener.listener(actionListener.self, message.eventAction, message.eventActionParams)
+          end
         end
       end
     end
 
-    if event.name == "leave" then
+    if (event.name == "leave") then
       -- not connected anymore
       print("disconnected from socket")
       print("error code: ", tostring(event.errorCode))
